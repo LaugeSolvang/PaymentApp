@@ -1,0 +1,43 @@
+{
+  "groups": [
+    {
+      "id": "group1",
+      "name": "Group 1",
+      "balance": "+$50",
+      "participants": [
+        {
+          "name": "Alice",
+          "expenses": [
+            { "description": "Lunch", "amount": "$20" },
+            { "description": "Taxi", "amount": "$15" }
+          ]
+        },
+        {
+          "name": "Bob",
+          "expenses": [
+            { "description": "Drinks", "amount": "$30" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group2",
+      "name": "Group 2",
+      "balance": "-$20",
+      "participants": [
+        {
+          "name": "Charlie",
+          "expenses": [
+            { "description": "Tickets", "amount": "$40" }
+          ]
+        },
+        {
+          "name": "Diana",
+          "expenses": [
+            { "description": "Snacks", "amount": "$5" }
+          ]
+        }
+      ]
+    }
+  ]
+}
