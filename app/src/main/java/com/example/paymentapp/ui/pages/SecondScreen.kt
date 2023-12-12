@@ -1,4 +1,4 @@
-package com.example.paymentapp
+package com.example.paymentapp.ui.pages
 
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button

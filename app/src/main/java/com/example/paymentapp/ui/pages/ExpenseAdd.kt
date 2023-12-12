@@ -1,0 +1,127 @@
+package com.example.paymentapp.ui.pages
+
+import android.util.Log
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.example.paymentapp.viewmodel.GroupViewModel
+import com.example.paymentapp.model.Expense
+import com.example.paymentapp.model.Share
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ExpenseAdd(navController: NavController, viewModel: GroupViewModel, groupId: String) {
+    var description by remember { mutableStateOf("") }
+    var amount by remember { mutableStateOf("") }
+    var splitEqually by remember { mutableStateOf(false) }
+    val participants = viewModel.getGroupParticipants(groupId).map { it.user.name }
+
+    // Map to store the owed amounts for each participant
+    var owedAmounts by remember { mutableStateOf(participants.associateWith { "" }) }
+
+    LaunchedEffect(splitEqually, amount) {
+        if (splitEqually && amount.toDoubleOrNull() != null) {
+            val equalShare = amount.toDouble() / participants.size
+            owedAmounts = participants.associateWith { equalShare.toString() }
+        }
+    }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Add Expense") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
+            TextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Description") }
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            TextField(
+                value = amount,
+                onValueChange = { amount = it },
+                label = { Text("Amount") }
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = splitEqually,
+                    onCheckedChange = { splitEqually = it }
+                )
+                Text("Split Equally")
+            }
+            // Log for debugging
+            Log.d("Debug", "Participants: $participants")
+            Log.d("Debug", "Owed Amounts: $owedAmounts")
+
+            if (!splitEqually) {
+                Text("Specify Shares:")
+                participants.forEach { participant ->
+                    Row {
+                        TextField(
+                            value = participant,
+                            onValueChange = {},
+                            label = { Text("User Name") },
+                            readOnly = true
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        TextField(
+                            value = owedAmounts[participant] ?: "",
+                            onValueChange = { owedAmounts = owedAmounts.toMutableMap().apply { put(participant, it) } },
+                            label = { Text("Owed") },
+                            modifier = Modifier.fillMaxWidth(2f)
+                        )
+                    }
+                }            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = {
+                val totalAmount = amount.toDoubleOrNull() ?: 0.0
+
+                val expenseShares: List<Share> = if (splitEqually) {
+                    Log.d("ShareMoney", "Splitting equally")
+
+                    val participants = viewModel.getGroupParticipants(groupId)
+                    val equalShare = totalAmount / participants.size
+
+                    participants.map { participant ->
+                        Share(user = participant.user, owed = String.format("%.2f", equalShare))
+                    }
+                } else {
+                    Log.d("ShareMoney", "Using owed amounts")
+
+                    owedAmounts.mapNotNull { (name, owedAmount) ->
+                        Log.d("Debug", "Processing share for $name with amount $owedAmount")
+
+                        viewModel.getGroupParticipants(groupId).find { it.user.name == name }?.let { participant ->
+                            Share(user = participant.user, owed = owedAmount).also {
+                                Log.d("Debug", "Created Share: $it")
+                            }
+                        }
+                    }
+                }
+                val newExpense = Expense(description = description, amount = amount, shares = expenseShares)
+                viewModel.addExpense(groupId, "user1", newExpense) // Replace "user1" with actual user ID
+                navController.navigateUp()
+            }) {
+                Text("Submit")
+            }
+        }
+    }
+}

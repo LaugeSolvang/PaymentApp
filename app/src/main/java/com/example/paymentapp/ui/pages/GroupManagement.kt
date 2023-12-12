@@ -1,0 +1,88 @@
+package com.example.paymentapp.ui.pages
+
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.text.font.FontWeight
+
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.example.paymentapp.model.Group
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GroupManagement(group: Group) {
+    val navController = rememberNavController()
+    val tabTitles = listOf("expenses", "debt")
+
+    // Determine the selected tab index based on the current route
+    val selectedTabIndex = when (navController.currentBackStackEntryAsState().value?.destination?.route) {
+        "expenses" -> 0
+        "debt" -> 1
+        else -> 0 // default to the first tab if the route is unknown
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    TabRow(selectedTabIndex = selectedTabIndex) {
+                        tabTitles.forEachIndexed { index, title ->
+                            Tab(
+                                selected = index == selectedTabIndex,
+                                onClick = { navController.navigate(title) {
+                                    // Avoid multiple copies of the same destination on the stack
+                                    popUpTo(navController.graph.startDestinationId)
+                                    launchSingleTop = true
+                                }},
+                                text = {
+                                    Text(
+                                        text = title.replaceFirstChar { it.uppercase() },
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = "expenses",
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable("expenses") {
+                Expenses(group.id, navController)
+            }
+            composable("debt") {
+                DebtScreen(group)
+            }
+            composable("addExpense/{groupId}") { backStackEntry ->
+                ExpenseAdd(navController, viewModel(), backStackEntry.arguments?.getString("groupId") ?: "")
+            }
+
+        }
+    }
+}
+
+// Your existing Expenses and ParticipantExpenses composables...
+
+@Composable
+fun DebtScreen(group: Group) {
+    // Implementation for the Debt screen...
+}
+
+
+

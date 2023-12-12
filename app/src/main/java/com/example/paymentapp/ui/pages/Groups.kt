@@ -1,4 +1,4 @@
-package com.example.paymentapp
+package com.example.paymentapp.ui.pages
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -15,14 +15,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.paymentapp.model.Group
 import com.example.paymentapp.ui.theme.PaymentAppTheme
+import com.example.paymentapp.viewmodel.GroupViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FirstScreen(navController: NavHostController) {
+fun Groups(navController: NavHostController) {
     val viewModel: GroupViewModel = viewModel()
     val groups = viewModel.groups.value
 
@@ -50,7 +53,7 @@ fun GroupList(groups: List<Group>, navController: NavHostController, modifier: M
 fun GroupItem(group: Group, navController: NavHostController) {
     Surface(
         modifier = Modifier
-            .clickable { navController.navigate("expenses/${group.id}") }
+            .clickable { navController.navigate("groupManagement/${group.id}") }
             .fillMaxWidth()
             .padding(8.dp),
         color = MaterialTheme.colorScheme.surfaceVariant,
@@ -84,6 +87,6 @@ fun GroupItem(group: Group, navController: NavHostController) {
 @Composable
 fun PreviewFirstScreen() {
     PaymentAppTheme {
-        FirstScreen(navController = rememberNavController())
+        Groups(navController = rememberNavController())
     }
 }
