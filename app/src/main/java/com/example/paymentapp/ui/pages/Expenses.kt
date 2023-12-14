@@ -19,25 +19,29 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.paymentapp.model.Participant
 import com.example.paymentapp.viewmodel.GroupViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.paymentapp.model.Group
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Expenses(groupId: String, navController: NavHostController) {
+fun Expenses(group: Group, navController: NavHostController) {
     val viewModel: GroupViewModel = viewModel()
-    val groups by viewModel.groups
-    val group = groups.find { it.id == groupId }
 
-    Log.d("ExpensesLog", "Expenses composable recomposed for groupId: $groupId")
-
+    LaunchedEffect(viewModel.needsRefresh) {
+            delay(50)  // Delay for 30 seconds or your preferred time
+            viewModel.resetRefreshFlag()  // Reset the flag
+            viewModel.loadGroups()  // Refresh groups
+    }
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate("addExpense/$groupId") }) {
+            FloatingActionButton(onClick = { navController.navigate("addExpense") }) {
                 Text("Add")
             }
         },
@@ -77,7 +81,7 @@ fun ParticipantExpenses(participant: Participant) {
                     Text(text = expense.description, style = MaterialTheme.typography.bodyLarge)
 
                     // Display expense amount on the right
-                    Text(text = "${expense.amount}", style = MaterialTheme.typography.bodyLarge)
+                    Text(text = expense.amount, style = MaterialTheme.typography.bodyLarge)
                 }
             }
         }

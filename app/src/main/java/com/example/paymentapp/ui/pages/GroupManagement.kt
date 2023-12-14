@@ -1,5 +1,6 @@
 package com.example.paymentapp.ui.pages
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Tab
@@ -12,7 +13,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -22,6 +22,7 @@ import com.example.paymentapp.model.Group
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupManagement(group: Group) {
+    Log.d("GroupdId2", group.id)
     val navController = rememberNavController()
     val tabTitles = listOf("expenses", "debt")
 
@@ -64,13 +65,13 @@ fun GroupManagement(group: Group) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("expenses") {
-                Expenses(group.id, navController)
+                Expenses(group, navController)
             }
             composable("debt") {
-                DebtScreen(group)
+                Debt(group, navController)
             }
-            composable("addExpense/{groupId}") { backStackEntry ->
-                ExpenseAdd(navController, viewModel(), backStackEntry.arguments?.getString("groupId") ?: "")
+            composable("addExpense") {
+                ExpenseAdd(navController, viewModel(), group.id)
             }
 
         }
@@ -79,10 +80,6 @@ fun GroupManagement(group: Group) {
 
 // Your existing Expenses and ParticipantExpenses composables...
 
-@Composable
-fun DebtScreen(group: Group) {
-    // Implementation for the Debt screen...
-}
 
 
 

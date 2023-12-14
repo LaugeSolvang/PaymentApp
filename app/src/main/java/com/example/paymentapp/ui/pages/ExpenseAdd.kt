@@ -67,9 +67,6 @@ fun ExpenseAdd(navController: NavController, viewModel: GroupViewModel, groupId:
                 )
                 Text("Split Equally")
             }
-            // Log for debugging
-            Log.d("Debug", "Participants: $participants")
-            Log.d("Debug", "Owed Amounts: $owedAmounts")
 
             if (!splitEqually) {
                 Text("Specify Shares:")
@@ -118,6 +115,7 @@ fun ExpenseAdd(navController: NavController, viewModel: GroupViewModel, groupId:
                 }
                 val newExpense = Expense(description = description, amount = amount, shares = expenseShares)
                 viewModel.addExpense(groupId, "user1", newExpense) // Replace "user1" with actual user ID
+                viewModel.refreshAfter()
                 navController.navigateUp()
             }) {
                 Text("Submit")

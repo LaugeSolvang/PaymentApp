@@ -1,7 +1,6 @@
 package com.example.paymentapp.ui
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -15,7 +14,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.example.paymentapp.model.Group
-import com.example.paymentapp.ui.pages.ExpenseAdd
 import com.example.paymentapp.ui.pages.GroupManagement
 import com.example.paymentapp.ui.pages.Groups
 import com.example.paymentapp.ui.pages.SecondScreen
@@ -70,7 +68,6 @@ fun AppBar(navController: NavHostController, currentRoute: String?, title: Strin
     CenterAlignedTopAppBar(
         title = {
             if (currentRoute == "groupManagement/{groupId}" && group != null) {
-                Log.d("Hirtg","gjfkgk")
                 Column {
                     Text(group.name, style = MaterialTheme.typography.titleMedium)
                     Text(

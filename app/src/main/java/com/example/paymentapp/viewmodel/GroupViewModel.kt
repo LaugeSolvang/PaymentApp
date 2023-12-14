@@ -2,7 +2,9 @@ package com.example.paymentapp.viewmodel
 
 import android.app.Application
 import android.util.Log
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.paymentapp.model.Expense
@@ -11,35 +13,52 @@ import com.example.paymentapp.model.Participant
 import com.example.paymentapp.model.User
 import com.example.paymentapp.network.RetrofitBuilder
 import com.example.paymentapp.network.api.GroupApiService
+import com.example.paymentapp.repository.GroupRepository
+import com.example.paymentapp.repository.LocalData
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class GroupViewModel(application: Application) : AndroidViewModel(application) {
-    var groups = mutableStateOf<List<Group>>(emptyList())
-    var users = mutableStateOf<List<User>>(emptyList())
+    private val apiService: GroupApiService = RetrofitBuilder.getGroupApiService(application)
+    private val localData = LocalData(application)
+    private val groupRepository = GroupRepository(localData, apiService, application)
 
-    private val apiService: GroupApiService = RetrofitBuilder.groupApiService
+    // MutableStateFlow for internal updates
+    private val _groups = MutableStateFlow<List<Group>>(emptyList())
+    private val _users = MutableStateFlow<List<User>>(emptyList())
+
+    // Exposed as read-only StateFlow
+    val groups: StateFlow<List<Group>> = _groups
+    val users: StateFlow<List<User>> = _users
+
 
     init {
         loadGroups()
         loadUsers()
     }
 
-    private fun loadGroups() {
+    fun loadGroups() {
         viewModelScope.launch {
             try {
-                val result = apiService.getGroups()
-                groups.value = result
+                val result = groupRepository.getGroups()
+                _groups.value = result
             } catch (e: Exception) {
-                Log.e("MyAppTag", "Error loading groups: ${e.message}")
+                Log.e("GroupViewModel", "Error loading groups: ${e.message}")
             }
         }
     }
 
-    private fun loadUsers() {
+    fun loadUsers() {
         viewModelScope.launch {
-            users.value = getAllUsers()
+            try {
+                val result = groupRepository.getUsers()
+                _users.value = result
+            } catch (e: Exception) {
+                Log.e("GroupViewModel", "Error loading users: ${e.message}")
+            }
         }
     }
 
@@ -54,44 +73,33 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    var needsRefresh by mutableStateOf(false)
+        private set
+
+    fun refreshAfter() {
+        needsRefresh = true
+        Log.d("NEEDSRESH2", needsRefresh.toString())
+    }
+
+    fun resetRefreshFlag() {
+        needsRefresh = false
+    }
+
 
     fun getGroupById(groupId: String?): Group? {
         return groups.value.find { it.id == groupId }
     }
 
     fun addExpense(groupId: String, userId: String, expense: Expense) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val groupIndex = groups.value.indexOfFirst { it.id == groupId }
-            if (groupIndex != -1) {
-                val group = groups.value[groupIndex]
-                val participantIndex = group.participants.indexOfFirst { it.user.id == userId }
-                if (participantIndex != -1) {
-                    val updatedParticipant = group.participants[participantIndex].copy(
-                        expenses = group.participants[participantIndex].expenses + expense
-                    )
-                    val updatedGroup = group.copy(
-                        participants = group.participants.toMutableList().apply {
-                            set(participantIndex, updatedParticipant)
-                        }
-                    )
-
-                    // Update the group data on the server and locally
-                    try {
-                        apiService.updateGroup(groupId, updatedGroup)
-                        // Update local data
-                        updateGroupLocally(groupIndex, updatedGroup)
-                    } catch (e: Exception) {
-                        Log.e("MyAppTag", "Error updating group: ${e.message}")
-                    }
-                }
+        viewModelScope.launch {
+            try {
+                groupRepository.addExpense(groupId, userId, expense)
+                // Optionally, refresh group data if needed
+                _groups.value = groupRepository.getGroups()
+            } catch (e: Exception) {
+                Log.e("GroupViewModel", "Error adding expense: ${e.message}")
             }
         }
-    }
-    private fun updateGroupLocally(index: Int, updatedGroup: Group) {
-        val updatedGroups = groups.value.toMutableList().apply {
-            set(index, updatedGroup)
-        }
-        groups.value = updatedGroups
     }
 
     // Method to get participants of a group
