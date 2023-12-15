@@ -20,6 +20,7 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -31,14 +32,22 @@ import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Expenses(group: Group, navController: NavHostController) {
+fun Expenses(currentGroup: Group, navController: NavHostController) {
     val viewModel: GroupViewModel = viewModel()
 
+    // Observe changes in the groups property of the ViewModel
+    val groups by viewModel.groups.collectAsState(emptyList())
+    val group = groups.find { it.id == currentGroup.id }
+    Log.d("Group4:",groups.toString())
+
     LaunchedEffect(viewModel.needsRefresh) {
-            delay(50)  // Delay for 30 seconds or your preferred time
+        Log.d("ITWORKS","needs ${viewModel.needsRefresh}")
+            //delay(50)  // Delay for 30 seconds or your preferred time
             viewModel.resetRefreshFlag()  // Reset the flag
             viewModel.loadGroups()  // Refresh groups
     }
+    Log.d("Group4:",groups.toString())
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = { navController.navigate("addExpense") }) {
