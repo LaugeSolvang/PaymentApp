@@ -26,8 +26,7 @@ import com.example.paymentapp.viewmodel.GroupViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Groups(navController: NavHostController) {
-    val viewModel: GroupViewModel = viewModel()
+fun Groups(navController: NavHostController, viewModel: GroupViewModel) {
     val groups by viewModel.groups.collectAsState()
 
     Scaffold(
@@ -84,10 +83,3 @@ fun GroupItem(group: Group, navController: NavHostController) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewFirstScreen() {
-    PaymentAppTheme {
-        Groups(navController = rememberNavController())
-    }
-}
