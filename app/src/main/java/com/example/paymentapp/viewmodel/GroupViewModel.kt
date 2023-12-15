@@ -2,9 +2,6 @@ package com.example.paymentapp.viewmodel
 
 import android.app.Application
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.paymentapp.model.Expense
@@ -18,6 +15,7 @@ import com.example.paymentapp.repository.LocalData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -31,9 +29,8 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
     private val _users = MutableStateFlow<List<User>>(emptyList())
 
     // Exposed as read-only StateFlow
-    val groups: StateFlow<List<Group>> = _groups
-    val users: StateFlow<List<User>> = _users
-
+    val groups: StateFlow<List<Group>> = _groups.asStateFlow()
+    val users: StateFlow<List<User>> = _users.asStateFlow()
 
     init {
         loadGroups()
@@ -72,19 +69,6 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-
-    var needsRefresh by mutableStateOf(false)
-        private set
-
-    fun refreshAfter() {
-        needsRefresh = true
-        Log.d("NEEDSRESH2", needsRefresh.toString())
-    }
-
-    fun resetRefreshFlag() {
-        needsRefresh = false
-    }
-
 
     fun getGroupById(groupId: String?): Group? {
         return groups.value.find { it.id == groupId }

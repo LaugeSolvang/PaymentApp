@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
                         startDestination = "first",
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        composable("first") { Groups(navController) }
+                        composable("first") { Groups(navController, viewModel) }
                         composable("second") { SecondScreen(navController) }
                         composable("groupManagement/{groupId}") { backStackEntry ->
                             currentGroupId = backStackEntry.arguments?.getString("groupId")
@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
                                 viewModel.getGroupById(groupId)
                             }
                             if (group != null) {
-                                GroupManagement(group)
+                                GroupManagement(viewModel, group)
                             }
                         }
                     }

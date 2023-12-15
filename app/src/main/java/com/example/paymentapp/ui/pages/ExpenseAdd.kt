@@ -15,10 +15,11 @@ import androidx.navigation.NavController
 import com.example.paymentapp.viewmodel.GroupViewModel
 import com.example.paymentapp.model.Expense
 import com.example.paymentapp.model.Share
+import com.example.paymentapp.network.RetrofitBuilder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExpenseAdd(navController: NavController, viewModel: GroupViewModel, groupId: String) {
+fun ExpenseAdd(navController: NavController, groupId: String, viewModel: GroupViewModel) {
     var description by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var splitEqually by remember { mutableStateOf(false) }
@@ -117,8 +118,8 @@ fun ExpenseAdd(navController: NavController, viewModel: GroupViewModel, groupId:
                     }
                 }
                 val newExpense = Expense(description = description, amount = amount, shares = expenseShares)
+                RetrofitBuilder.clearCache()
                 viewModel.addExpense(groupId, "user1", newExpense) // Replace "user1" with actual user ID
-                viewModel.refreshAfter()
                 navController.navigateUp()
             }) {
                 Text("Submit")

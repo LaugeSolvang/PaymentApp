@@ -9,11 +9,13 @@ import java.io.File
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.util.Log
 import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 
 object RetrofitBuilder {
     private const val BASE_URL = Config.BASE_URL
+    private lateinit var cache: Cache
 
     private fun createOkHttpClient(context: Context): OkHttpClient {
         val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
@@ -21,7 +23,7 @@ object RetrofitBuilder {
         }
 
         val cacheSize = 10 * 1024 * 1024L // 10 MB
-        val cache = Cache(File(context.cacheDir, "http_cache"), cacheSize)
+        cache = Cache(File(context.cacheDir, "http_cache"), cacheSize)
 
         return OkHttpClient.Builder()
             .addInterceptor(httpLoggingInterceptor)
@@ -38,6 +40,19 @@ object RetrofitBuilder {
             .readTimeout(1, TimeUnit.SECONDS)    // Set the read timeout
             .writeTimeout(1, TimeUnit.SECONDS)   // Set the write timeout
             .build()
+    }
+
+    fun clearCache() {
+        if (this::cache.isInitialized) {
+            try {
+                val sizeBefore = cache.size()
+                cache.evictAll()
+                val sizeAfter = cache.size()
+                Log.d("CacheClear", "Cache cleared. Size before: $sizeBefore, Size after: $sizeAfter")
+            } catch (e: Exception) {
+                // Handle or log the exception as necessary
+            }
+        }
     }
 
 

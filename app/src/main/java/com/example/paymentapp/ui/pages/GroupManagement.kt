@@ -1,6 +1,5 @@
 package com.example.paymentapp.ui.pages
 
-import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Tab
@@ -12,17 +11,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.paymentapp.model.Group
+import com.example.paymentapp.viewmodel.GroupViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GroupManagement(group: Group) {
-    Log.d("GroupdId2", group.id)
+fun GroupManagement(viewModel: GroupViewModel, group: Group) {
     val navController = rememberNavController()
     val tabTitles = listOf("expenses", "debt")
 
@@ -65,21 +63,14 @@ fun GroupManagement(group: Group) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("expenses") {
-                Expenses(group, navController)
+                Expenses(navController, viewModel)
             }
             composable("debt") {
                 Debt(group, navController)
             }
             composable("addExpense") {
-                ExpenseAdd(navController, viewModel(), group.id)
+                ExpenseAdd(navController, group.id, viewModel)
             }
-
         }
     }
 }
-
-// Your existing Expenses and ParticipantExpenses composables...
-
-
-
-
