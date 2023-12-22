@@ -91,35 +91,38 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
 
     fun calculateDebtSummary(groupId: String): Flow<List<DebtItem>> = flow {
         try {
-        // Fetch the detailed group data
-        val detailedGroup = groupRepository.getDetailedGroup(groupId)
+            // Trying hardcoded data
+            emit(listOf(DebtItem("Test User", "+10€")))
 
-        // Logic to calculate the balances...
-        val balances = mutableMapOf<String, Double>()
+            val detailedGroup = groupRepository.getDetailedGroup(groupId)
 
-        // Iterate over each participant in the group
+        // Initialize a map to track balances for each user
+        val balances = detailedGroup.participants.associate { it.user.id to 0.0 }.toMutableMap()
+
+        // Calculate expenses and update balances
         detailedGroup.participants.forEach { participant ->
-            // Iterate over each expense of the participant
             participant.expenses.forEach { expense ->
-                // Calculate the amount each participant owes for this expense
-                val totalOwedPerParticipant = expense.amount.toDouble() / expense.shares.size
+                val amount = expense.amount.toDouble()
+                val payerId = participant.user.id
+                val numberOfShares = expense.shares.size
+
+                // Subtract the shared amount from each user except the payer
                 expense.shares.forEach { share ->
-                    val balance = balances.getOrDefault(share.user.id, 0.0)
-                    balances[share.user.id] = balance - totalOwedPerParticipant
+                    val shareAmount = amount / numberOfShares
+                    if (share.user.id != payerId) {
+                        balances[share.user.id] = balances[share.user.id]!! - shareAmount
+                        balances[payerId] = balances[payerId]!! + shareAmount
+                    }
                 }
-                // Add the total expense amount to the balance of the participant who paid
-                val payerBalance = balances.getOrDefault(participant.user.id, 0.0)
-                balances[participant.user.id] = payerBalance + expense.amount.toDouble()
             }
         }
 
         // Convert balances to DebtItem list
         val debtSummary = balances.map { (userId, balance) ->
             val userName = users.value.find { it.id == userId }?.name ?: "Unknown"
-            DebtItem(userName, if(balance >= 0) "+${balance.format()}€" else "${balance.format()}€")
+            DebtItem(userName, if (balance >= 0) "+${"%.2f".format(balance)}€" else "${"%.2f".format(balance)}€")
         }
 
-        Log.d("DebtCalculation", "Emitting debt summary: $debtSummary")
         emit(debtSummary)
         } catch (e: Exception) {
             Log.e("DebtCalculation", "Error calculating debt summary", e)
