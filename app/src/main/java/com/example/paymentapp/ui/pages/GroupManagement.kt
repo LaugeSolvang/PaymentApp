@@ -66,7 +66,7 @@ fun GroupManagement(viewModel: GroupViewModel, group: Group) {
                 Expenses(navController, viewModel, group.id)
             }
             composable("debt") {
-                Debt(navController, viewModel, group.id)
+                Debt(group, navController, viewModel) // Pass viewModel here
             }
             composable("addExpense") {
                 ExpenseAdd(navController, viewModel, group.id)

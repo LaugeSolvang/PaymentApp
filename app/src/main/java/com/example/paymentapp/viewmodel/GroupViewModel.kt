@@ -13,11 +13,14 @@ import com.example.paymentapp.network.api.GroupApiService
 import com.example.paymentapp.repository.GroupRepository
 import com.example.paymentapp.repository.LocalData
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.example.paymentapp.model.DebtItem
 
 class GroupViewModel(application: Application) : AndroidViewModel(application) {
     private val apiService: GroupApiService = RetrofitBuilder.getGroupApiService(application)
@@ -85,6 +88,46 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    fun calculateDebtSummary(groupId: String): Flow<List<DebtItem>> = flow {
+        try {
+        // Fetch the detailed group data
+        val detailedGroup = groupRepository.getDetailedGroup(groupId)
+
+        // Logic to calculate the balances...
+        val balances = mutableMapOf<String, Double>()
+
+        // Iterate over each participant in the group
+        detailedGroup.participants.forEach { participant ->
+            // Iterate over each expense of the participant
+            participant.expenses.forEach { expense ->
+                // Calculate the amount each participant owes for this expense
+                val totalOwedPerParticipant = expense.amount.toDouble() / expense.shares.size
+                expense.shares.forEach { share ->
+                    val balance = balances.getOrDefault(share.user.id, 0.0)
+                    balances[share.user.id] = balance - totalOwedPerParticipant
+                }
+                // Add the total expense amount to the balance of the participant who paid
+                val payerBalance = balances.getOrDefault(participant.user.id, 0.0)
+                balances[participant.user.id] = payerBalance + expense.amount.toDouble()
+            }
+        }
+
+        // Convert balances to DebtItem list
+        val debtSummary = balances.map { (userId, balance) ->
+            val userName = users.value.find { it.id == userId }?.name ?: "Unknown"
+            DebtItem(userName, if(balance >= 0) "+${balance.format()}€" else "${balance.format()}€")
+        }
+
+        Log.d("DebtCalculation", "Emitting debt summary: $debtSummary")
+        emit(debtSummary)
+        } catch (e: Exception) {
+            Log.e("DebtCalculation", "Error calculating debt summary", e)
+            emit(emptyList<DebtItem>()) // Emit an empty list in case of error
+        }
+    }
+
+    fun Double.format(): String = String.format("%.2f", this)
 
     // Method to get participants of a group
     fun getGroupParticipants(groupId: String): List<Participant> {
