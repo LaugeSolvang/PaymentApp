@@ -21,10 +21,6 @@ fun Debt(group: Group, navController: NavHostController, viewModel: GroupViewMod
     // We collect the debt summary as a state in the composable
     val debtSummary by viewModel.calculateDebtSummary(group.id).collectAsState(initial = emptyList())
 
-    LaunchedEffect(debtSummary) {
-        Log.d("DebtComposable", "Debt summary collected: $debtSummary")
-    }
-
     Log.d("DebtUI", "Debt summary in UI: $debtSummary")
 
     Scaffold(
