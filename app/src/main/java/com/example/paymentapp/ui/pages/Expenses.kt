@@ -27,9 +27,9 @@ import com.example.paymentapp.viewmodel.GroupViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Expenses(navController: NavHostController, viewModel: GroupViewModel) {
+fun Expenses(navController: NavHostController, viewModel: GroupViewModel, groupId: String) {
     val groups by viewModel.groups.collectAsState(emptyList())
-    val group = groups.find { it.id == "group1" }
+    val group = groups.find { it.id == groupId }
     Log.d("Group4:", groups.toString())
     Log.d("Group4:", groups.toString())
 

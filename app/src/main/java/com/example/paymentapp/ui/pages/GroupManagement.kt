@@ -63,13 +63,13 @@ fun GroupManagement(viewModel: GroupViewModel, group: Group) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("expenses") {
-                Expenses(navController, viewModel)
+                Expenses(navController, viewModel, group.id)
             }
             composable("debt") {
-                Debt(group, navController)
+                Debt(navController, viewModel, group.id)
             }
             composable("addExpense") {
-                ExpenseAdd(navController, group.id, viewModel)
+                ExpenseAdd(navController, viewModel, group.id)
             }
         }
     }

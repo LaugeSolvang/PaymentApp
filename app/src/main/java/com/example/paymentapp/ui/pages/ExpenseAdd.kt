@@ -19,7 +19,7 @@ import com.example.paymentapp.network.RetrofitBuilder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExpenseAdd(navController: NavController, groupId: String, viewModel: GroupViewModel) {
+fun ExpenseAdd(navController: NavController, viewModel: GroupViewModel, groupId: String) {
     var description by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var splitEqually by remember { mutableStateOf(false) }
