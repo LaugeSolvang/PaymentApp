@@ -92,7 +92,7 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
     fun calculateDebtSummary(groupId: String): Flow<List<DebtItem>> = flow {
         try {
             // Trying hardcoded data
-            emit(listOf(DebtItem("Test User", "+10€")))
+            // emit(listOf(DebtItem("Test User", "+10€")))
 
             val detailedGroup = groupRepository.getDetailedGroup(groupId)
 
