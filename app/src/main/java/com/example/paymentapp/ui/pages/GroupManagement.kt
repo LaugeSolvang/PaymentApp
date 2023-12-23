@@ -57,6 +57,7 @@ fun GroupManagement(viewModel: GroupViewModel, group: Group) {
             )
         }
     ) { innerPadding ->
+        // Inside GroupManagement composable function
         NavHost(
             navController = navController,
             startDestination = "expenses",
@@ -66,7 +67,8 @@ fun GroupManagement(viewModel: GroupViewModel, group: Group) {
                 Expenses(navController, viewModel)
             }
             composable("debt") {
-                Debt(group, navController, viewModel) // Pass viewModel here
+                // Pass the group ID as a string instead of the whole Group object
+                Debt(navController, viewModel, group.id)
             }
             composable("addExpense") {
                 ExpenseAdd(navController, group.id, viewModel)

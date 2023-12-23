@@ -17,19 +17,21 @@ import com.example.paymentapp.model.DebtItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Debt(group: Group, navController: NavHostController, viewModel: GroupViewModel) {
-    // We collect the debt summary as a state in the composable
-    val debtSummary by viewModel.calculateDebtSummary(group.id).collectAsState(initial = emptyList())
+fun Debt(navController: NavHostController, viewModel: GroupViewModel, groupId: String) {
+    // Fetch the group based on groupId
+    val groups by viewModel.groups.collectAsState(emptyList())
+    val group = groups.find { it.id == groupId }
 
-    Log.d("DebtUI", "Debt summary in UI: $debtSummary")
+    // Collect the debt summary if the group is not null
+    val debtSummary = group?.let {
+        viewModel.calculateDebtSummary(it.id).collectAsState(initial = emptyList()).value
+    } ?: emptyList()
 
     Scaffold(
-        // You can add a top bar or any other UI elements you need
         topBar = {
             TopAppBar(
-                title = { Text(text = "Debt Overview for ${group.name}") },
+                title = { Text(text = "Debt Overview for ${group?.name ?: "Group"}") },
                 navigationIcon = {
-                    // If you want to add a back button
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
                     }
