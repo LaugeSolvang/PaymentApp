@@ -145,5 +145,40 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
     fun getUserIdByName(name: String): String? {
         return users.value.find { it.name == name }?.id
     }
+
+    fun createGroup(group: Group) {
+        viewModelScope.launch {
+            try {
+                Log.d("GroupViewModel", "Creating group: $group")
+                groupRepository.createGroup(group)
+                _groups.value = groupRepository.getGroups()
+            } catch (e: Exception) {
+                Log.e("GroupViewModel", "Error creating group: ${e.message}")
+            }
+        }
+    }
+    fun addParticipant(groupId: String, participant: Participant) {
+        viewModelScope.launch {
+            try {
+                Log.d("GroupViewModel", "Adding participant to group with ID: $groupId")
+                groupRepository.addParticipant(groupId, participant)
+                _groups.value = groupRepository.getGroups()
+            } catch (e: Exception) {
+                Log.e("GroupViewModel", "Error adding participant: ${e.message}")
+            }
+        }
+    }
+    fun removeParticipant(groupId: String, participantId: String) {
+        viewModelScope.launch {
+            try {
+                Log.d("GroupViewModel", "Removing participant with ID: $participantId from group with ID: $groupId")
+                groupRepository.removeParticipant(groupId, participantId)
+                _groups.value = groupRepository.getGroups()
+            } catch (e: Exception) {
+                Log.e("GroupViewModel", "Error removing participant: ${e.message}")
+            }
+        }
+    }
+
 }
 
