@@ -116,14 +116,18 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
         }
-
+            Log.d("GroupViewModel", users.value.toString())
         // Convert balances to DebtItem list
         val debtSummary = balances.map { (userId, balance) ->
             val userName = users.value.find { it.id == userId }?.name ?: "Unknown"
             DebtItem(userName, if (balance >= 0) "+${"%.2f".format(balance)}€" else "${"%.2f".format(balance)}€")
         }
 
-        emit(debtSummary)
+            debtSummary.forEach { debtItem ->
+                Log.d("GroupViewModel", "DebtItem - Name: ${debtItem.name}, Balance: ${debtItem.balance}")
+            }
+
+            emit(debtSummary)
         } catch (e: Exception) {
             Log.e("DebtCalculation", "Error calculating debt summary", e)
             emit(emptyList<DebtItem>()) // Emit an empty list in case of error

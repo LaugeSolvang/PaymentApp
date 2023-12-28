@@ -1,18 +1,12 @@
 package com.example.paymentapp.ui.pages
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.paymentapp.model.Group
 import com.example.paymentapp.viewmodel.GroupViewModel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import com.example.paymentapp.model.DebtItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,16 +22,6 @@ fun Debt(navController: NavHostController, viewModel: GroupViewModel, groupId: S
     } ?: emptyList()
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = "Debt Overview for ${group?.name ?: "Group"}") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
     ) { padding ->
         DebtList(debtSummary = debtSummary, modifier = Modifier.padding(padding))
     }
