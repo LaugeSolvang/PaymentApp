@@ -1,5 +1,6 @@
 package com.example.paymentapp.network.api
 
+import com.example.paymentapp.model.Expense
 import com.example.paymentapp.model.Group
 import com.example.paymentapp.model.Participant
 import com.example.paymentapp.model.User
@@ -17,4 +18,10 @@ interface GroupApiService {
 
     @GET("users")
     suspend fun getUsers(): List<User>
+
+    @GET("groups/{groupId}/participants/{participantId}/expenses")
+    suspend fun getExpensesForParticipant(
+        @Path("groupId") groupId: String,
+        @Path("participantId") participantId: String
+    ): List<Expense>
 }

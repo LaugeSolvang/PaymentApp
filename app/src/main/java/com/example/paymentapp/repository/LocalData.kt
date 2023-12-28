@@ -1,6 +1,7 @@
 package com.example.paymentapp.repository
 
 import android.content.Context
+import com.example.paymentapp.model.Expense
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.example.paymentapp.model.Group
@@ -35,6 +36,21 @@ class LocalData(private val context: Context) {
         val json = sharedPreferences.getString("users", null)
         return if (json != null) {
             val type = object : TypeToken<List<User>>() {}.type
+            gson.fromJson(json, type)
+        } else {
+            emptyList()
+        }
+    }
+
+    fun saveExpenses(expenses: List<Expense>) {
+        val json = gson.toJson(expenses)
+        sharedPreferences.edit().putString("expenses", json).apply()
+    }
+
+    fun getExpenses(): List<Expense> {
+        val json = sharedPreferences.getString("expenses", null)
+        return if (json != null) {
+            val type = object : TypeToken<List<Expense>>() {}.type
             gson.fromJson(json, type)
         } else {
             emptyList()

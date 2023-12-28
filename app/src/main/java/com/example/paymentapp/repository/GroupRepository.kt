@@ -50,6 +50,16 @@ class GroupRepository(private val localData: LocalData,
         }
     }
 
+    suspend fun getDetailedGroup(groupId: String): Group {
+        // First, get the basic group data
+        val group = getGroups().find { it.id == groupId } ?: throw NoSuchElementException("Group not found")
+
+        // Assuming each group already contains its participants and their expenses,
+        // no additional data fetching is required here.
+        // Just return the group as it is.
+        return group
+    }
+
     suspend fun addExpense(groupId: String, userId: String, expense: Expense) {
         val groups = localData.getGroups().toMutableList()
         val groupIndex = groups.indexOfFirst { it.id == groupId }
