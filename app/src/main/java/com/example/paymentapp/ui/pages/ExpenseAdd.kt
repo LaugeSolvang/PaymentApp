@@ -1,12 +1,14 @@
 package com.example.paymentapp.ui.pages
 
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -24,6 +26,11 @@ fun ExpenseAdd(navController: NavController, viewModel: GroupViewModel, groupId:
     var amount by remember { mutableStateOf("") }
     var splitEqually by remember { mutableStateOf(false) }
     val participants = viewModel.getGroupParticipants(groupId).map { it.user.name }
+    var expanded by remember { mutableStateOf(false) }
+    var selectedUser by remember { mutableStateOf(participants.firstOrNull() ?: "") }
+
+    val groups by viewModel.groups.collectAsState(emptyList())
+    val group = groups.find { it.id == groupId }
 
     // Map to store the owed amounts for each participant
     var owedAmounts by remember { mutableStateOf(participants.associateWith { "" }) }
@@ -63,6 +70,32 @@ fun ExpenseAdd(navController: NavController, viewModel: GroupViewModel, groupId:
                 label = { Text("Amount") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
+            OutlinedTextField(
+                value = selectedUser,
+                onValueChange = { selectedUser = it },
+                label = { Text("Paid by") },
+                readOnly = true, // make the text field read-only
+                trailingIcon = {
+                    Icon(Icons.Filled.ArrowDropDown, "Drop-down icon", Modifier.clickable { expanded = !expanded })
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Box {
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    participants.forEach { participant ->
+                        DropdownMenuItem(
+                            text = { Text(participant) },
+                            onClick = {
+                                selectedUser = participant
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
@@ -119,6 +152,12 @@ fun ExpenseAdd(navController: NavController, viewModel: GroupViewModel, groupId:
                 }
                 val newExpense = Expense(description = description, amount = amount, shares = expenseShares)
                 RetrofitBuilder.clearCache()
+                val payerId = group?.participants?.find { it.user.name == selectedUser }?.user?.id
+                if (payerId != null) {
+                    viewModel.addExpense(groupId, payerId, newExpense)
+                } else {
+                    Log.e("ExpenseAdd", "Failed to find user ID for selected user: $selectedUser")
+                }
                 viewModel.addExpense(groupId, "user1", newExpense) // Replace "user1" with actual user ID
                 navController.navigateUp()
             }) {
