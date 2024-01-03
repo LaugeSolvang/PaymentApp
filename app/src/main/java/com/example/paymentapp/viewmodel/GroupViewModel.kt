@@ -168,5 +168,16 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+    fun removeParticipant(groupId: String, userId: String) {
+        viewModelScope.launch {
+            try {
+                groupRepository.removeParticipant(groupId, userId)
+                // Optionally, refresh group data if needed
+                _groups.value = groupRepository.getGroups()
+            } catch (e: Exception) {
+                Log.e("GroupViewModel", "Error removing participant: ${e.message}")
+            }
+        }
+    }
 }
 

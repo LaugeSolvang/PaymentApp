@@ -66,6 +66,13 @@ fun GroupManagement(viewModel: GroupViewModel, group: Group) {
                 }) {
                     Icon(Icons.Default.Add, contentDescription = "Add Participant")
                 }
+                IconButton(
+                    onClick = {
+                        navController.navigate("removeParticipant")
+                    }
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = "Remove Participant")
+                }
             }
 
     )
@@ -89,6 +96,9 @@ fun GroupManagement(viewModel: GroupViewModel, group: Group) {
             }
             composable("addParticipant") {
                 AddParticipant(navController, viewModel, group.id)
+            }
+            composable("removeParticipant") {
+                RemoveParticipant(navController, viewModel, group.id)
             }
         }
     }
