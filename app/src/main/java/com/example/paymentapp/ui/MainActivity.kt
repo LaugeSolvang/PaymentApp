@@ -10,28 +10,19 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.clickable
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
-import com.example.paymentapp.model.Group
-import com.example.paymentapp.model.Participant
-import com.example.paymentapp.model.User
 import com.example.paymentapp.ui.pages.CreateGroup
 import com.example.paymentapp.ui.pages.GroupManagement
 import com.example.paymentapp.ui.pages.Groups
@@ -102,10 +93,7 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     topBar = {
-                        val group = currentGroupId?.let { groupId ->
-                            viewModel.getGroupById(groupId)
-                        }
-                        AppBar(navController, currentRoute, "CashApp", group)
+                        AppBar(navController, currentRoute, "CashApp", viewModel, currentGroupId)
                     },
                 ) { innerPadding ->
                     NavHost(
@@ -121,7 +109,7 @@ class MainActivity : ComponentActivity() {
                                 viewModel.getGroupById(groupId)
                             }
                             if (group != null) {
-                                GroupManagement(viewModel, group)
+                                currentGroupId?.let { GroupManagement(viewModel, it) }
                             }
                         }
                         composable("createGroup") {
@@ -150,14 +138,16 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppBar(navController: NavHostController, currentRoute: String?, title: String, group: Group? = null) {
+fun AppBar(navController: NavHostController, currentRoute: String?, title: String, viewModel: GroupViewModel, groupId: String?) {
+    val group by viewModel.getGroupById(groupId).collectAsState(initial = null)
+
     CenterAlignedTopAppBar(
         title = {
             if (currentRoute == "groupManagement/{groupId}" && group != null) {
                 Column {
-                    Text(group.name, style = MaterialTheme.typography.titleMedium)
+                    Text(group!!.name, style = MaterialTheme.typography.titleMedium)
                     Text(
-                        text = group.participants.joinToString(", ") { it.user.name },
+                        text = group!!.participants.joinToString(", ") { it.user.name },
                         style = MaterialTheme.typography.bodySmall
                     )
                 }

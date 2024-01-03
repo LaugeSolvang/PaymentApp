@@ -22,10 +22,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.paymentapp.model.Group
 import com.example.paymentapp.viewmodel.GroupViewModel
+import kotlinx.coroutines.flow.Flow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GroupManagement(viewModel: GroupViewModel, group: Group) {
+fun GroupManagement(viewModel: GroupViewModel, groupId: String) {
     val navController = rememberNavController()
     val tabTitles = listOf("expenses", "debt")
 
@@ -78,17 +79,17 @@ fun GroupManagement(viewModel: GroupViewModel, group: Group) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("expenses") {
-                Expenses(navController, viewModel, group.id)
+                Expenses(navController, viewModel, groupId)
             }
             composable("debt") {
                 // Pass the group ID as a string instead of the whole Group object
-                Debt(navController, viewModel, group.id)
+                Debt(navController, viewModel, groupId)
             }
             composable("addExpense") {
-                ExpenseAdd(navController, viewModel, group.id)
+                ExpenseAdd(navController, viewModel, groupId)
             }
             composable("addParticipant") {
-                AddParticipant(navController, viewModel, group.id)
+                AddParticipant(navController, viewModel, groupId)
             }
         }
     }

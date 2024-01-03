@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.example.paymentapp.model.DebtItem
+import kotlinx.coroutines.flow.map
 
 class GroupViewModel(application: Application) : AndroidViewModel(application) {
     private val apiService: GroupApiService = RetrofitBuilder.getGroupApiService(application)
@@ -73,8 +74,10 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun getGroupById(groupId: String?): Group? {
-        return groups.value.find { it.id == groupId }
+    fun getGroupById(groupId: String?): Flow<Group?> {
+        return groups.map { groupList ->
+            groupList.find { it.id == groupId }
+        }
     }
 
     fun addExpense(groupId: String, userId: String, expense: Expense) {
@@ -119,7 +122,7 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
             Log.d("GroupViewModel", users.value.toString())
         // Convert balances to DebtItem list
         val debtSummary = balances.map { (userId, balance) ->
-            val userName = users.value.find { it.id == userId }?.name ?: "Unknown"
+            val userName = detailedGroup.participants.find { it.user.id == userId }?.user?.name ?: "Unknown"
             DebtItem(userName, if (balance >= 0) "+${"%.2f".format(balance)}€" else "${"%.2f".format(balance)}€")
         }
 
