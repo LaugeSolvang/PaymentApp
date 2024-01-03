@@ -158,7 +158,6 @@ fun ExpenseAdd(navController: NavController, viewModel: GroupViewModel, groupId:
                 } else {
                     Log.e("ExpenseAdd", "Failed to find user ID for selected user: $selectedUser")
                 }
-                viewModel.addExpense(groupId, "user1", newExpense) // Replace "user1" with actual user ID
                 navController.navigateUp()
             }) {
                 Text("Submit")
