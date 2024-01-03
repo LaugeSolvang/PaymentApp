@@ -131,4 +131,20 @@ class GroupRepository(private val localData: LocalData,
             }
         }
     }
+    suspend fun removeParticipant(groupId: String, participantName: String) {
+        val groups = localData.getGroups().toMutableList()
+        val groupIndex = groups.indexOfFirst { it.id == groupId }
+
+        if (groupIndex != -1) {
+            val updatedGroup = groups[groupIndex].copy(
+                participants = groups[groupIndex].participants.filterNot { it.user.name == participantName }
+            )
+            updateGroupLocally(updatedGroup)
+            try {
+                apiService.updateGroup(groupId, updatedGroup)
+            } catch (e: Exception) {
+                // Handle error, perhaps by rethrowing or logging
+            }
+        }
+    }
 }
