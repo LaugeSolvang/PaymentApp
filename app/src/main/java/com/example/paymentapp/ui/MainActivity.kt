@@ -23,12 +23,14 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
-import com.example.paymentapp.model.Group
+import com.example.paymentapp.ui.pages.CreateGroup
 import com.example.paymentapp.ui.pages.GroupManagement
 import com.example.paymentapp.ui.pages.Groups
 import com.example.paymentapp.ui.pages.SecondScreen
 import com.example.paymentapp.ui.theme.PaymentAppTheme
 import com.example.paymentapp.viewmodel.GroupViewModel
+import androidx.compose.runtime.collectAsState
+
 import com.google.firebase.FirebaseApp
 import com.google.firebase.messaging.FirebaseMessaging
 
@@ -91,10 +93,7 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     topBar = {
-                        val group = currentGroupId?.let { groupId ->
-                            viewModel.getGroupById(groupId)
-                        }
-                        AppBar(navController, currentRoute, "CashApp", group)
+                        AppBar(navController, currentRoute, "CashApp", viewModel, currentGroupId)
                     },
                 ) { innerPadding ->
                     NavHost(
@@ -110,8 +109,11 @@ class MainActivity : ComponentActivity() {
                                 viewModel.getGroupById(groupId)
                             }
                             if (group != null) {
-                                GroupManagement(viewModel, group)
+                                currentGroupId?.let { GroupManagement(viewModel, it) }
                             }
+                        }
+                        composable("createGroup") {
+                            CreateGroup(navController, viewModel)
                         }
                     }
                 }
@@ -136,14 +138,16 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppBar(navController: NavHostController, currentRoute: String?, title: String, group: Group? = null) {
+fun AppBar(navController: NavHostController, currentRoute: String?, title: String, viewModel: GroupViewModel, groupId: String?) {
+    val group by viewModel.getGroupById(groupId).collectAsState(initial = null)
+
     CenterAlignedTopAppBar(
         title = {
             if (currentRoute == "groupManagement/{groupId}" && group != null) {
                 Column {
-                    Text(group.name, style = MaterialTheme.typography.titleMedium)
+                    Text(group!!.name, style = MaterialTheme.typography.titleMedium)
                     Text(
-                        text = group.participants.joinToString(", ") { it.user.name },
+                        text = group!!.participants.joinToString(", ") { it.user.name },
                         style = MaterialTheme.typography.bodySmall
                     )
                 }

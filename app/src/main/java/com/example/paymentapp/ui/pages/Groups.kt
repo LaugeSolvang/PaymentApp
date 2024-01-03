@@ -30,15 +30,19 @@ fun Groups(navController: NavHostController, viewModel: GroupViewModel) {
     val groups by viewModel.groups.collectAsState()
 
     Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = { /* TODO: Implement create group action */ }) {
-                Icon(Icons.Default.Add, contentDescription = "Create Group")
+            floatingActionButton = {
+                FloatingActionButton(onClick = {
+                    // Navigate to the new destination for creating a group
+                    navController.navigate("createGroup")
+                }) {
+                    Icon(Icons.Default.Add, contentDescription = "Create Group")
+                }
             }
-        }
     ) { innerPadding ->
         GroupList(groups = groups, navController, modifier = Modifier.padding(innerPadding))
     }
 }
+
 
 @Composable
 fun GroupList(groups: List<Group>, navController: NavHostController, modifier: Modifier = Modifier) {
@@ -82,4 +86,3 @@ fun GroupItem(group: Group, navController: NavHostController) {
         }
     }
 }
-

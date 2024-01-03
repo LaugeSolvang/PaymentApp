@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.example.paymentapp.model.DebtItem
+import kotlinx.coroutines.flow.map
 
 class GroupViewModel(application: Application) : AndroidViewModel(application) {
     private val apiService: GroupApiService = RetrofitBuilder.getGroupApiService(application)
@@ -73,8 +74,10 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun getGroupById(groupId: String?): Group? {
-        return groups.value.find { it.id == groupId }
+    fun getGroupById(groupId: String?): Flow<Group?> {
+        return groups.map { groupList ->
+            groupList.find { it.id == groupId }
+        }
     }
 
     fun addExpense(groupId: String, userId: String, expense: Expense) {
@@ -119,7 +122,7 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
             Log.d("GroupViewModel", users.value.toString())
         // Convert balances to DebtItem list
         val debtSummary = balances.map { (userId, balance) ->
-            val userName = users.value.find { it.id == userId }?.name ?: "Unknown"
+            val userName = detailedGroup.participants.find { it.user.id == userId }?.user?.name ?: "Unknown"
             DebtItem(userName, if (balance >= 0) "+${"%.2f".format(balance)}€" else "${"%.2f".format(balance)}€")
         }
 
@@ -144,6 +147,40 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
     // Method to get user ID by name
     fun getUserIdByName(name: String): String? {
         return users.value.find { it.name == name }?.id
+    }
+
+    fun createGroup(group: Group) {
+        viewModelScope.launch {
+            try {
+                Log.d("GroupViewModel", "Creating group: $group")
+                groupRepository.createGroup(group)
+                _groups.value = groupRepository.getGroups()
+            } catch (e: Exception) {
+                Log.e("GroupViewModel", "Error creating group: ${e.message}")
+            }
+        }
+    }
+    fun addParticipant(groupId: String, participant: Participant) {
+        viewModelScope.launch {
+            try {
+                groupRepository.addParticipant(groupId, participant)
+                // Optionally, refresh group data if needed
+                _groups.value = groupRepository.getGroups()
+            } catch (e: Exception) {
+                Log.e("GroupViewModel", "Error adding participant: ${e.message}")
+            }
+        }
+    }
+    fun removeParticipant(groupId: String, userId: String) {
+        viewModelScope.launch {
+            try {
+                groupRepository.removeParticipant(groupId, userId)
+                // Optionally, refresh group data if needed
+                _groups.value = groupRepository.getGroups()
+            } catch (e: Exception) {
+                Log.e("GroupViewModel", "Error removing participant: ${e.message}")
+            }
+        }
     }
 }
 

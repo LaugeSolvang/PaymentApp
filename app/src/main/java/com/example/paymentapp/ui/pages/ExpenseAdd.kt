@@ -26,7 +26,6 @@ fun ExpenseAdd(navController: NavController, viewModel: GroupViewModel, groupId:
     var amount by remember { mutableStateOf("") }
     var splitEqually by remember { mutableStateOf(false) }
     val participants = viewModel.getGroupParticipants(groupId).map { it.user.name }
-
     var expanded by remember { mutableStateOf(false) }
     var selectedUser by remember { mutableStateOf(participants.firstOrNull() ?: "") }
 
@@ -97,7 +96,6 @@ fun ExpenseAdd(navController: NavController, viewModel: GroupViewModel, groupId:
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
@@ -160,7 +158,6 @@ fun ExpenseAdd(navController: NavController, viewModel: GroupViewModel, groupId:
                 } else {
                     Log.e("ExpenseAdd", "Failed to find user ID for selected user: $selectedUser")
                 }
-
                 navController.navigateUp()
             }) {
                 Text("Submit")
