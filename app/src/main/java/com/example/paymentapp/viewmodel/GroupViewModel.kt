@@ -160,25 +160,13 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
     fun addParticipant(groupId: String, participant: Participant) {
         viewModelScope.launch {
             try {
-                Log.d("GroupViewModel", "Adding participant to group with ID: $groupId")
                 groupRepository.addParticipant(groupId, participant)
+                // Optionally, refresh group data if needed
                 _groups.value = groupRepository.getGroups()
             } catch (e: Exception) {
                 Log.e("GroupViewModel", "Error adding participant: ${e.message}")
             }
         }
     }
-    fun removeParticipant(groupId: String, participantId: String) {
-        viewModelScope.launch {
-            try {
-                Log.d("GroupViewModel", "Removing participant with ID: $participantId from group with ID: $groupId")
-                groupRepository.removeParticipant(groupId, participantId)
-                _groups.value = groupRepository.getGroups()
-            } catch (e: Exception) {
-                Log.e("GroupViewModel", "Error removing participant: ${e.message}")
-            }
-        }
-    }
-
 }
 

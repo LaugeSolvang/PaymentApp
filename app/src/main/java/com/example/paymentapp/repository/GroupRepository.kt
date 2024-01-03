@@ -123,28 +123,18 @@ class GroupRepository(private val localData: LocalData,
         }
     }
     suspend fun addParticipant(groupId: String, participant: Participant) {
-        try {
-            // Add the participant on the server
-            apiService.addParticipant(groupId, participant)
-            // Update the local data
-            updateGroupLocally(groupId) { group ->
-                group.copy(participants = group.participants + participant)
-            }
-        } catch (e: Exception) {
-            Log.e("GroupRepository", "Error adding participant: ${e.message}")
-        }
-    }
+        val groups = localData.getGroups().toMutableList()
+        val groupIndex = groups.indexOfFirst { it.id == groupId }
 
-    suspend fun removeParticipant(groupId: String, participantId: String) {
-        try {
-            // Remove the participant on the server
-            apiService.removeParticipant(groupId, participantId)
-            // Update the local data
+        if (groupIndex != -1) {
+            val updatedGroup = groups[groupIndex].copy(
+                participants = groups[groupIndex].participants + participant
+            )
+
+            // Update the group with the new participant
             updateGroupLocally(groupId) { group ->
-                group.copy(participants = group.participants.filterNot { it.user.id == participantId })
+                updatedGroup
             }
-        } catch (e: Exception) {
-            Log.e("GroupRepository", "Error removing participant: ${e.message}")
         }
     }
 }

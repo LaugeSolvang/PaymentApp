@@ -21,8 +21,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.paymentapp.model.Group
-import com.example.paymentapp.ui.AddParticipant
-import com.example.paymentapp.ui.RemoveParticipant
 import com.example.paymentapp.viewmodel.GroupViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,13 +66,6 @@ fun GroupManagement(viewModel: GroupViewModel, group: Group) {
                 }) {
                     Icon(Icons.Default.Add, contentDescription = "Add Participant")
                 }
-
-                // Remove participant button
-                IconButton(onClick = {
-                    navController.navigate("removeParticipant")
-                }) {
-                    Icon(Icons.Default.Delete, contentDescription = "Remove Participant")
-                }
             }
 
     )
@@ -98,10 +89,6 @@ fun GroupManagement(viewModel: GroupViewModel, group: Group) {
             }
             composable("addParticipant") {
                 AddParticipant(navController, viewModel, group.id)
-            }
-
-            composable("removeParticipant") {
-                RemoveParticipant(navController, viewModel, group.id)
             }
         }
     }

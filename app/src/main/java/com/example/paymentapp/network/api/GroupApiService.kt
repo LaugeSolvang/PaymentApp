@@ -24,12 +24,6 @@ interface GroupApiService {
    @POST("groups")
    suspend fun createGroup(@Body group: Group)
 
-    @POST("groups/{groupId}/participants")
-    suspend fun addParticipant(@Path("groupId") groupId: String, @Body participant: Participant)
-
-    @DELETE("groups/{groupId}/participants/{participantId}")
-    suspend fun removeParticipant(@Path("groupId") groupId: String, @Path("participantId") participantId: String)
-
     @GET("groups/{groupId}/participants/{participantId}/expenses")
     suspend fun getExpensesForParticipant(
         @Path("groupId") groupId: String,
