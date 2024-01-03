@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "230888955275",
+    "project_id": "paymentapp-msd",
+    "storage_bucket": "paymentapp-msd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:230888955275:android:b2eb817d181362c193638e",
+        "android_client_info": {
+          "package_name": "com.example.paymentapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANDsZHSEiTYvH4Nu_6VVERa2bpToiUU-0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
