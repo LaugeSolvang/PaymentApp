@@ -99,7 +99,7 @@ fun GroupManagement(viewModel: GroupViewModel, groupId: String) {
                 AddParticipant(navController, viewModel, groupId)
             }
             composable("removeParticipant") {
-                RemoveParticipant(navController, viewModel, group.id)
+                RemoveParticipant(navController, viewModel, groupId)
             }
         }
     }
