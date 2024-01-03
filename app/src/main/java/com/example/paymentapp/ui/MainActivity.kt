@@ -1,12 +1,17 @@
 package com.example.paymentapp.ui
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -14,38 +19,69 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
-import com.example.paymentapp.R
 import com.example.paymentapp.model.Group
 import com.example.paymentapp.ui.pages.GroupManagement
 import com.example.paymentapp.ui.pages.Groups
 import com.example.paymentapp.ui.pages.SecondScreen
 import com.example.paymentapp.ui.theme.PaymentAppTheme
 import com.example.paymentapp.viewmodel.GroupViewModel
-import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.FirebaseApp
 import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : ComponentActivity() {
+    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
+
     @SuppressLint("StringFormatInvalid")
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+
+
+        // Initialize the permission launcher
+        requestPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                // Permission granted
+            } else {
+                // Permission denied
+            }
+        }
+
+        askNotificationPermission()
+
+        FirebaseApp.initializeApp(this)
+
+        if (FirebaseApp.getApps(this).isNotEmpty()) {
+            Log.d("FirebaseInit", "Firebase initialized successfully")
+        } else {
+            Log.d("FirebaseInit", "Firebase initialization failed")
+        }
+
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
-                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
-                return@OnCompleteListener
+                Log.w(
+                    TAG,
+                    "Fetching FCM registration token failed",
+                    task.exception
+                )
+                return@addOnCompleteListener
             }
 
             // Get new FCM registration token
             val token = task.result
+            if (token != null) {
+                Log.d(TAG, "FCM Token: $token")
+                Toast.makeText(baseContext, "Token: $token", Toast.LENGTH_SHORT).show()
+            } else {
+                Log.d(TAG, "FCM Token is null")
+            }
+        }
 
-            // Log and toast
-            val msg = getString(R.string.msg_token_fmt, token)
-            Log.d(TAG, msg)
-            Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
-        })
         setContent {
             PaymentAppTheme {
                 val navController = rememberNavController()
@@ -82,6 +118,20 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    private fun askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                // FCM SDK (and your app) can post notifications.
+            } else {
+                // For Android 13 and above, directly request the permission.
+                // Consider showing a custom rationale UI here if necessary.
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -116,4 +166,3 @@ fun getCurrentRoute(navController: NavHostController): String? {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     return navBackStackEntry?.destination?.route
 }
-
