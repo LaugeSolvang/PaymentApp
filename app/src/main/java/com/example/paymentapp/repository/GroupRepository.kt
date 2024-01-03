@@ -48,18 +48,6 @@ class GroupRepository(private val localData: LocalData,
         }
     }
 
-    suspend fun updateGroup(groupId: String, updatedGroup: Group) {
-        try {
-            apiService.updateGroup(groupId, updatedGroup)
-            // Update the local cache with the new group data
-            updateGroupLocally(groupId) { group ->
-                updatedGroup // or any modifications you want to apply
-            }
-        } catch (e: Exception) {
-            // Handle error, perhaps by rethrowing or logging
-        }
-    }
-
     suspend fun getDetailedGroup(groupId: String): Group {
         // First, get the basic group data
         val group = getGroups().find { it.id == groupId } ?: throw NoSuchElementException("Group not found")
@@ -84,22 +72,27 @@ class GroupRepository(private val localData: LocalData,
                     expenses = group.participants[participantIndex].expenses + expense
                 )
                 // Update the group with the new participant info
-                updateGroupLocally(groupId) { group ->
-                    group.copy(
-                            participants = group.participants.toMutableList().apply {
-                                set(participantIndex, updatedParticipant)
-                            }
-                    )
+                val updatedGroup = group.copy(
+                    participants = group.participants.toMutableList().apply {
+                        set(participantIndex, updatedParticipant)
+                    }
+                )
+                // Save the updated group locally and try to update it on the server
+                updateGroupLocally(updatedGroup)
+                try {
+                    apiService.updateGroup(groupId, updatedGroup)
+                } catch (e: Exception) {
+                    // Handle error, perhaps by rethrowing or logging
                 }
             }
         }
     }
 
-    private inline fun updateGroupLocally(groupId: String, update: (Group) -> Group) {
+    private fun updateGroupLocally(updatedGroup: Group) {
         val currentGroups = localData.getGroups().toMutableList()
-        val index = currentGroups.indexOfFirst { it.id == groupId }
+        val index = currentGroups.indexOfFirst { it.id == updatedGroup.id }
         if (index != -1) {
-            currentGroups[index] = update(currentGroups[index])
+            currentGroups[index] = updatedGroup
             localData.saveGroups(currentGroups)
         }
     }
@@ -130,10 +123,11 @@ class GroupRepository(private val localData: LocalData,
             val updatedGroup = groups[groupIndex].copy(
                 participants = groups[groupIndex].participants + participant
             )
-
-            // Update the group with the new participant
-            updateGroupLocally(groupId) { group ->
-                updatedGroup
+            updateGroupLocally(updatedGroup)
+            try {
+                apiService.updateGroup(groupId, updatedGroup)
+            } catch (e: Exception) {
+                // Handle error, perhaps by rethrowing or logging
             }
         }
     }

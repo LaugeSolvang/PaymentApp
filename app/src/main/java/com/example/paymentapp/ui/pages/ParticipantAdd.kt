@@ -35,7 +35,7 @@ fun AddParticipant(navController: NavHostController, viewModel: GroupViewModel, 
         Button(
             onClick = {
                 // Create a new participant and add it to the group
-                val newUser = User("user3", participantName, "phoneNumber")
+                val newUser = User("userId", participantName, "phoneNumber")
                 val newParticipant = Participant(user = newUser, expenses = emptyList())
                 viewModel.addParticipant(groupId, newParticipant)
                 navController.popBackStack()
