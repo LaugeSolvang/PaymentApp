@@ -244,16 +244,17 @@ fun DividerTextComponent(){
 }
 
 @Composable
-fun ClickableLoginTextComponent(tryingToLogin:Boolean = true, onTextSelected: (String) -> Unit) {
-    val initialText = if(tryingToLogin) "Already have an account? " else "Don't have an account yet? "
-    val loginText = if(tryingToLogin) "Login" else "Register"
+fun ClickableLoginTextComponent(tryingToLogin: Boolean = true, onLoginClicked: () -> Unit) {
+    val initialText = if (tryingToLogin) "Already have an account? " else "Don't have an account yet? "
+    val clickablePart = if (tryingToLogin) "Login" else "Register"
 
     val annotatedString = buildAnnotatedString {
         append(initialText)
+        pushStringAnnotation(tag = "login", annotation = clickablePart)
         withStyle(style = SpanStyle(color = colorResource(id = R.color.colorPrimary))) {
-            pushStringAnnotation(tag = loginText, annotation = loginText)
-            append(loginText)
+            append(clickablePart)
         }
+        pop() // Don't forget to pop the annotation
     }
 
     ClickableText(
@@ -267,17 +268,14 @@ fun ClickableLoginTextComponent(tryingToLogin:Boolean = true, onTextSelected: (S
             textAlign = TextAlign.Center
         ),
         text = annotatedString, onClick = { offset ->
-
-            annotatedString.getStringAnnotations(offset, offset)
-                .firstOrNull()?.also { span ->
-                    Log.d("ClickableTextComponent", "{${span.item}}")
-
-                    if (span.item == loginText) {
-                        onTextSelected(span.item)
-                    }
+            annotatedString.getStringAnnotations(tag = "login", start = offset, end = offset)
+                .firstOrNull()?.also {
+                    onLoginClicked()
                 }
-        })
+        }
+    )
 }
+
 
 @Composable
 fun UnderLinedNormalTextComponent(value:String){

@@ -63,10 +63,9 @@ fun SignUpScreen(navController: NavHostController) {
             )
             DividerTextComponent()
 
-            ClickableLoginTextComponent(tryingToLogin = true, onTextSelected = {
-
+            ClickableLoginTextComponent(tryingToLogin = true, onLoginClicked = {
+                navController.navigate("login") // Replace "login" with your actual login screen route
             })
-
         }
     }
 }

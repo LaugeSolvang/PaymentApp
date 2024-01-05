@@ -61,8 +61,8 @@ fun LoginScreen (navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(20.dp))
             DividerTextComponent()
-            ClickableLoginTextComponent(tryingToLogin = false, onTextSelected = {
-
+            ClickableLoginTextComponent(tryingToLogin = false, onLoginClicked = {
+                navController.navigate("signup") // Replace "login" with your actual login screen route
             })
 
         }
