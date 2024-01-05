@@ -15,6 +15,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.paymentapp.R
 import com.example.paymentapp.components.ButtonComponent
 import com.example.paymentapp.components.ClickableLoginTextComponent
@@ -26,7 +27,7 @@ import com.example.paymentapp.components.PasswordTextFieldComponent
 import com.example.paymentapp.components.UnderLinedNormalTextComponent
 
 @Composable
-fun LoginScreen () {
+fun LoginScreen (navController: NavHostController) {
 
     Surface(
         color = Color.White,
@@ -54,7 +55,9 @@ fun LoginScreen () {
             UnderLinedNormalTextComponent(value = stringResource(id = R.string.forgot_password))
 
             Spacer(modifier = Modifier.height(40.dp))
-            ButtonComponent(value = stringResource(id = R.string.login))
+            ButtonComponent(onClick = {
+                navController.navigate("first") // Navigate to the Groups screen
+            }, value = stringResource(id = R.string.login))
 
             Spacer(modifier = Modifier.height(20.dp))
             DividerTextComponent()
@@ -65,10 +68,3 @@ fun LoginScreen () {
         }
     }
 }
-
-@Preview
-@Composable
-fun LoginScreenPreview(){
-    LoginScreen()
-}
-

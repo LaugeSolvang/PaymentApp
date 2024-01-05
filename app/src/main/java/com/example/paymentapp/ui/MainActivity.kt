@@ -30,6 +30,8 @@ import com.example.paymentapp.ui.pages.SecondScreen
 import com.example.paymentapp.ui.theme.PaymentAppTheme
 import com.example.paymentapp.viewmodel.GroupViewModel
 import androidx.compose.runtime.collectAsState
+import com.example.paymentapp.ui.pages.LoginScreen
+import com.example.paymentapp.ui.pages.SignUpScreen
 
 import com.google.firebase.FirebaseApp
 import com.google.firebase.messaging.FirebaseMessaging
@@ -98,9 +100,11 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "first",
+                        startDestination = "signup",
                         modifier = Modifier.padding(innerPadding)
                     ) {
+                        composable("signup") { SignUpScreen(navController) } // Add SignUpScreen route
+                        composable("login") { LoginScreen(navController) } // Add SignUpScreen route
                         composable("first") { Groups(navController, viewModel) }
                         composable("second") { SecondScreen(navController) }
                         composable("groupManagement/{groupId}") { backStackEntry ->
