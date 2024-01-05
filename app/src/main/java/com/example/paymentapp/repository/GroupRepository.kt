@@ -3,15 +3,23 @@ package com.example.paymentapp.repository
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.util.Log
 import com.example.paymentapp.model.Expense
 import com.example.paymentapp.model.Group
+import com.example.paymentapp.model.Participant
 import com.example.paymentapp.model.User
 import com.example.paymentapp.network.api.GroupApiService
+import com.example.paymentapp.viewmodel.GroupViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class GroupRepository(private val localData: LocalData,
                       private val apiService: GroupApiService,
-                      private val context: Context
+                      private val context: Context,
+
+
 ) {
+    private val _groups = MutableStateFlow<List<Group>>(emptyList())
+
     suspend fun getGroups(): List<Group> {
         return if (isNetworkAvailable(context)) {
             try {
@@ -37,16 +45,6 @@ class GroupRepository(private val localData: LocalData,
             }
         } else {
             localData.getUsers()
-        }
-    }
-
-    suspend fun updateGroup(groupId: String, updatedGroup: Group) {
-        try {
-            apiService.updateGroup(groupId, updatedGroup)
-            // Update the local cache with the new group data
-            updateGroupLocally(updatedGroup)
-        } catch (e: Exception) {
-            // Handle error, perhaps by rethrowing or logging
         }
     }
 
@@ -106,5 +104,47 @@ class GroupRepository(private val localData: LocalData,
         return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
                     capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
                     capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+    }
+    suspend fun createGroup(group: Group) {
+        try {
+            // Call the appropriate method in your repository to add the new group
+            apiService.createGroup(group)
+            // Optionally, refresh group data if needed
+            _groups.value = getGroups()
+        } catch (e: Exception) {
+            Log.e("GroupRepository", "Error creating group: ${e.message}")
+        }
+    }
+    suspend fun addParticipant(groupId: String, participant: Participant) {
+        val groups = localData.getGroups().toMutableList()
+        val groupIndex = groups.indexOfFirst { it.id == groupId }
+
+        if (groupIndex != -1) {
+            val updatedGroup = groups[groupIndex].copy(
+                participants = groups[groupIndex].participants + participant
+            )
+            updateGroupLocally(updatedGroup)
+            try {
+                apiService.updateGroup(groupId, updatedGroup)
+            } catch (e: Exception) {
+                // Handle error, perhaps by rethrowing or logging
+            }
+        }
+    }
+    suspend fun removeParticipant(groupId: String, participantName: String) {
+        val groups = localData.getGroups().toMutableList()
+        val groupIndex = groups.indexOfFirst { it.id == groupId }
+
+        if (groupIndex != -1) {
+            val updatedGroup = groups[groupIndex].copy(
+                participants = groups[groupIndex].participants.filterNot { it.user.name == participantName }
+            )
+            updateGroupLocally(updatedGroup)
+            try {
+                apiService.updateGroup(groupId, updatedGroup)
+            } catch (e: Exception) {
+                // Handle error, perhaps by rethrowing or logging
+            }
+        }
     }
 }
