@@ -1,5 +1,6 @@
 package com.example.paymentapp.ui.pages
 
+import FCMHelper
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.*
@@ -14,10 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.paymentapp.R
 import com.example.paymentapp.viewmodel.GroupViewModel
 import com.example.paymentapp.model.Expense
 import com.example.paymentapp.model.Share
 import com.example.paymentapp.network.RetrofitBuilder
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +37,8 @@ fun ExpenseAdd(navController: NavController, viewModel: GroupViewModel, groupId:
 
     // Map to store the owed amounts for each participant
     var owedAmounts by remember { mutableStateOf(participants.associateWith { "" }) }
+
+    val fcmHelper = FCMHelper()
 
     LaunchedEffect(splitEqually, amount) {
         if (splitEqually && amount.toDoubleOrNull() != null) {
@@ -125,6 +130,7 @@ fun ExpenseAdd(navController: NavController, viewModel: GroupViewModel, groupId:
                     }
                 }            }
             Spacer(modifier = Modifier.height(16.dp))
+            val currentContext = LocalContext.current
             Button(onClick = {
                 val totalAmount = amount.toDoubleOrNull() ?: 0.0
 
@@ -159,6 +165,12 @@ fun ExpenseAdd(navController: NavController, viewModel: GroupViewModel, groupId:
                     Log.e("ExpenseAdd", "Failed to find user ID for selected user: $selectedUser")
                 }
                 navController.navigateUp()
+
+
+                val tokens = listOf("d8MJY7rtTmu4PfTplYyBqx:APA91bFfBw3yUeJvO183fbinZ2c9nf61jzvHCpGLJyCN4aOqrDpBw-J_Wm-dwZYjh6tu5KTjsVOe0MHc77VeKFL7cryjsvGbn-EN2s9I3j6GmEjJAgN6x7ddS4-Qpr5ErTxTgRGshCja", ) //Feel free to add your FCM tokens here
+                val title = "Title" //The title of the notification is defined in FirebaseMessagingService
+                val message = currentContext.getString(R.string.msg_context_text)
+                fcmHelper.sendNotification(tokens, title, message)
             }) {
                 Text("Submit")
             }

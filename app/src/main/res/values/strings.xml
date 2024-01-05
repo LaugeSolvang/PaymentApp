@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">PaymentApp</string>
     <string name="msg_token_fmt">Token: </string>
+    <string name="msg_context_text">A New Expense Has Been Added</string>
 </resources>

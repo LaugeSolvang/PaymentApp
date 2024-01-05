@@ -81,4 +81,5 @@ dependencies {
     implementation ("androidx.compose.runtime:runtime-livedata:1.0.5")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.4.0-beta01")
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation ("com.squareup.okhttp3:okhttp:4.11.0")
 }
