@@ -54,7 +54,8 @@ fun LoginScreen (navController: NavHostController, loginViewModel: LoginViewMode
                 onTextSelected = {
                     loginViewModel.onEvent(UIEvent.EmailChanged(it))
 
-                }
+                },
+                errorStatus = loginViewModel.registrationUIState.value.emailError
             )
 
             PasswordTextFieldComponent(
@@ -63,16 +64,20 @@ fun LoginScreen (navController: NavHostController, loginViewModel: LoginViewMode
                 onTextSelected = {
                     loginViewModel.onEvent(UIEvent.PasswordChanged(it))
 
-                }
+                },
+                errorStatus = loginViewModel.registrationUIState.value.passwordError
             )
 
             Spacer(modifier = Modifier.height(40.dp))
             UnderLinedNormalTextComponent(value = stringResource(id = R.string.forgot_password))
 
-            Spacer(modifier = Modifier.height(40.dp))
-            ButtonComponent(onClick = {
-                navController.navigate("first") // Navigate to the Groups screen
-            }, value = stringResource(id = R.string.login))
+            Spacer(modifier = Modifier.height(40.dp)
+            )
+            ButtonComponent(value = stringResource(id = R.string.login),
+                onButtonClick = {
+                    loginViewModel.onEvent(UIEvent.RegisterButtonClicked)
+                    navController.navigate("first") // Navigate to the Groups screen
+                })
 
             Spacer(modifier = Modifier.height(20.dp))
             DividerTextComponent()

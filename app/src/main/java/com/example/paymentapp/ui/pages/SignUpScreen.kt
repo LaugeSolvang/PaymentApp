@@ -48,7 +48,8 @@ fun SignUpScreen(navController: NavHostController, loginViewModel: LoginViewMode
                 onTextSelected = {
                     loginViewModel.onEvent(UIEvent.FirstNameChanged(it))
 
-                }
+                },
+                errorStatus = loginViewModel.registrationUIState.value.firstNameError
             )
             MyTextFieldComponent(
                 labelValue = stringResource(id = R.string.last_name),
@@ -56,7 +57,8 @@ fun SignUpScreen(navController: NavHostController, loginViewModel: LoginViewMode
                 onTextSelected = {
                     loginViewModel.onEvent(UIEvent.LastNameChanged(it))
 
-                }
+                },
+                errorStatus = loginViewModel.registrationUIState.value.lastNameError
             )
             MyTextFieldComponent(
                 labelValue = stringResource(id = R.string.email),
@@ -64,7 +66,8 @@ fun SignUpScreen(navController: NavHostController, loginViewModel: LoginViewMode
                 onTextSelected = {
                     loginViewModel.onEvent(UIEvent.EmailChanged(it))
 
-                }
+                },
+                errorStatus = loginViewModel.registrationUIState.value.emailError
             )
             PasswordTextFieldComponent(
                 labelValue = stringResource(id = R.string.password),
@@ -72,13 +75,16 @@ fun SignUpScreen(navController: NavHostController, loginViewModel: LoginViewMode
                 onTextSelected = {
                     loginViewModel.onEvent(UIEvent.PasswordChanged(it))
 
-                }
+                },
+                errorStatus = loginViewModel.registrationUIState.value.passwordError
             )
             Spacer(modifier = Modifier.height(80.dp)
             )
-            ButtonComponent(onClick = {
+            ButtonComponent(value = stringResource(id = R.string.register),
+            onButtonClick = {
+                loginViewModel.onEvent(UIEvent.RegisterButtonClicked)
                 navController.navigate("first") // Navigate to the Groups screen
-            }, value = stringResource(id = R.string.register))
+            })
             Spacer(modifier = Modifier.height(20.dp)
             )
             DividerTextComponent()

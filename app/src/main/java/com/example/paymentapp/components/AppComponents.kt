@@ -93,7 +93,8 @@ fun HeadingTextComponent(value:String){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyTextFieldComponent(labelValue:String, painterResource: Painter,
-                         onTextSelected: (String) -> Unit
+                         onTextSelected: (String) -> Unit,
+                         errorStatus:Boolean
 ) {
 
     val textValue = remember {
@@ -121,7 +122,8 @@ fun MyTextFieldComponent(labelValue:String, painterResource: Painter,
         },
         leadingIcon = {
             Icon(painter = painterResource, contentDescription = "")
-        }
+        },
+        isError = !errorStatus
 
     )
 }
@@ -129,7 +131,8 @@ fun MyTextFieldComponent(labelValue:String, painterResource: Painter,
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PasswordTextFieldComponent(labelValue:String, painterResource: Painter,
-                               onTextSelected: (String) -> Unit
+                               onTextSelected: (String) -> Unit,
+                               errorStatus:Boolean
 ) {
 
     val localFocusManager = LocalFocusManager.current
@@ -185,14 +188,17 @@ fun PasswordTextFieldComponent(labelValue:String, painterResource: Painter,
             }
 
         },
-        visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation()
+        visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
+        isError = !errorStatus
     )
 }
 
 @Composable
-fun ButtonComponent(value: String, onClick: () -> Unit){
+fun ButtonComponent(value: String, onButtonClick: () -> Unit){
     Button(
-        onClick = onClick,
+        onClick = {
+            onButtonClick.invoke()
+        },
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(48.dp),
