@@ -1,11 +1,24 @@
 package com.example.paymentapp.data
 
+import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.paymentapp.data.rules.Validator
+import com.example.paymentapp.model.Account
+import com.example.paymentapp.network.RetrofitBuilder
+import com.example.paymentapp.network.api.ApiService
+import com.example.paymentapp.repository.LocalData
+import com.example.paymentapp.repository.UserRepository
+import kotlinx.coroutines.launch
+import java.util.UUID
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(application: Application) : AndroidViewModel(application) {
+    private val apiService: ApiService = RetrofitBuilder.getGroupApiService(application)
+    private val localData = LocalData(application)
+    private val userRepository = UserRepository(localData, apiService)
+    var accountId = mutableStateOf<String?>(null)
 
     private val TAG = LoginViewModel::class.simpleName
 
@@ -47,14 +60,61 @@ class LoginViewModel : ViewModel() {
                 signUp()
             }
 
+            is UIEvent.LoginButtonClicked -> {
+                login()
+            }
+
         }
     }
 
     private fun signUp() {
-        Log.d(TAG,"Inside_signUp")
-        printState()
+        Log.d(TAG, "Inside_signUp")
+        // ...
 
-        validateDataWithRules()
+
+        // Assuming you have a valid User object from the registration UI state
+        val newUser = Account(
+            id = UUID.randomUUID().toString(),
+            firstname = registrationUIState.value.firstName,
+            lastname = registrationUIState.value.lastName,
+            email = registrationUIState.value.email,
+            password = registrationUIState.value.password,
+            groupIds = listOf() // Initialize with an empty list
+        )
+
+        viewModelScope.launch {
+            try {
+                userRepository.createUser(newUser)
+                // Handle post-registration logic
+                accountId.value = newUser.id
+                Log.d("LoginViewModel", "Account created with ID: ${accountId.value}")
+
+            } catch (e: Exception) {
+                Log.e("LoginViewModel", "Error creating user: ${e.message}")
+            }
+        }
+    }
+
+    private fun login() {
+        viewModelScope.launch {
+            try {
+                Log.d(TAG, "Login successful with account ID: ${accountId.value}")
+
+                // Assuming you have a method in your UserRepository to authenticate the user
+                val user = userRepository.authenticateUser(
+                    email = registrationUIState.value.email,
+                    password = registrationUIState.value.password
+                )
+                if (user != null) {
+                    accountId.value = user.id
+                    Log.d(TAG, "Login successful with account ID: ${accountId.value}")
+                } else {
+                    Log.e(TAG, "Login failed: User not found")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during login: ${e.message}")
+            }
+        }
     }
 
     private fun validateDataWithRules() {

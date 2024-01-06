@@ -1,5 +1,6 @@
 package com.example.paymentapp.ui.pages
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -15,18 +16,21 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
+import com.example.paymentapp.data.LoginViewModel
 import com.example.paymentapp.model.Group
-import com.example.paymentapp.ui.theme.PaymentAppTheme
 import com.example.paymentapp.viewmodel.GroupViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Groups(navController: NavHostController, viewModel: GroupViewModel) {
+fun Groups(navController: NavHostController, viewModel: GroupViewModel, loginViewModel: LoginViewModel) {
+    loginViewModel.accountId.value?.let { Log.d("Value", it) }
+    val accountId = loginViewModel.accountId.value
+
+    if (accountId != null) {
+        viewModel.setCurrentAccountId(accountId)
+    }
     val groups by viewModel.groups.collectAsState()
 
     Scaffold(

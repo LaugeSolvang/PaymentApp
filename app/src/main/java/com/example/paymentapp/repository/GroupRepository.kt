@@ -7,18 +7,38 @@ import android.util.Log
 import com.example.paymentapp.model.Expense
 import com.example.paymentapp.model.Group
 import com.example.paymentapp.model.Participant
-import com.example.paymentapp.model.User
-import com.example.paymentapp.network.api.GroupApiService
-import com.example.paymentapp.viewmodel.GroupViewModel
+import com.example.paymentapp.network.api.ApiService
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class GroupRepository(private val localData: LocalData,
-                      private val apiService: GroupApiService,
+                      private val apiService: ApiService,
                       private val context: Context,
-
-
-) {
+                      ) {
     private val _groups = MutableStateFlow<List<Group>>(emptyList())
+
+    suspend fun getGroupsForAccount(accountId: String): List<Group> {
+        return try {
+            // Fetch the user's account details to get the group IDs
+            val account = apiService.getUser(accountId)
+            // Map each group ID to its respective group details
+            val groups = account.groupIds.mapNotNull { groupId ->
+                try {
+                    apiService.getGroup(groupId)
+                } catch (e: Exception) {
+                    // Log the error and return null to ignore errors for individual groups
+                    Log.e("GroupRepository", "Error fetching group details for group ID: $groupId", e)
+                    null
+                }
+            }
+            // Save the retrieved groups locally
+            localData.saveGroups(groups)
+            groups
+        } catch (e: Exception) {
+            // Log the error and return an empty list in case of an error fetching the account
+            Log.e("GroupRepository", "Error fetching groups for account: $accountId", e)
+            emptyList()
+        }
+    }
 
     suspend fun getGroups(): List<Group> {
         return if (isNetworkAvailable(context)) {
@@ -34,32 +54,14 @@ class GroupRepository(private val localData: LocalData,
         }
     }
 
-    suspend fun getUsers(): List<User> {
-        return if (isNetworkAvailable(context)) {
-            try {
-                val users = apiService.getUsers()
-                localData.saveUsers(users)
-                users
-            } catch (e: Exception) {
-                localData.getUsers()
-            }
-        } else {
-            localData.getUsers()
-        }
+    fun getGroup(groupId: String): Group {
+        return localData.getGroupById(groupId)
     }
 
-    suspend fun getDetailedGroup(groupId: String): Group {
-        // First, get the basic group data
-        val group = getGroups().find { it.id == groupId } ?: throw NoSuchElementException("Group not found")
 
-        // Assuming each group already contains its participants and their expenses,
-        // no additional data fetching is required here.
-        // Just return the group as it is.
-        return group
-    }
 
     suspend fun addExpense(groupId: String, userId: String, expense: Expense) {
-        val groups = localData.getGroups().toMutableList()
+        val groups = localData.getGroups()
         val groupIndex = groups.indexOfFirst { it.id == groupId }
 
         if (groupIndex != -1) {
@@ -105,16 +107,28 @@ class GroupRepository(private val localData: LocalData,
                     capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
                     capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
     }
-    suspend fun createGroup(group: Group) {
+    suspend fun createGroup(group: Group, accountId: String) {
         try {
-            // Call the appropriate method in your repository to add the new group
-            apiService.createGroup(group)
-            // Optionally, refresh group data if needed
-            _groups.value = getGroups()
+            // Create the group and receive the created group details
+            val createdGroup = apiService.createGroup(group)
+
+            // Fetch the current account details
+            val currentAccount = apiService.getUser(accountId)
+
+            // Add the new group ID to the account's group IDs list
+            val updatedGroupIds = currentAccount.groupIds + createdGroup.id
+            val updatedAccount = currentAccount.copy(groupIds = updatedGroupIds)
+
+            // Update the account with the new list of group IDs
+            apiService.updateUser(accountId, updatedAccount)
+
+            // Refresh the group data for the account
+            _groups.value = getGroupsForAccount(accountId)
         } catch (e: Exception) {
-            Log.e("GroupRepository", "Error creating group: ${e.message}")
+            Log.e("GroupRepository", "Error creating group or updating account: ${e.message}")
         }
     }
+
     suspend fun addParticipant(groupId: String, participant: Participant) {
         val groups = localData.getGroups().toMutableList()
         val groupIndex = groups.indexOfFirst { it.id == groupId }

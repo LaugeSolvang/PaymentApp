@@ -9,22 +9,20 @@ import com.example.paymentapp.model.Group
 import com.example.paymentapp.model.Participant
 import com.example.paymentapp.model.User
 import com.example.paymentapp.network.RetrofitBuilder
-import com.example.paymentapp.network.api.GroupApiService
+import com.example.paymentapp.network.api.ApiService
 import com.example.paymentapp.repository.GroupRepository
 import com.example.paymentapp.repository.LocalData
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import com.example.paymentapp.model.DebtItem
 import kotlinx.coroutines.flow.map
 
 class GroupViewModel(application: Application) : AndroidViewModel(application) {
-    private val apiService: GroupApiService = RetrofitBuilder.getGroupApiService(application)
+    private val apiService: ApiService = RetrofitBuilder.getGroupApiService(application)
     private val localData = LocalData(application)
     private val groupRepository = GroupRepository(localData, apiService, application)
 
@@ -32,44 +30,27 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
     private val _groups = MutableStateFlow<List<Group>>(emptyList())
     private val _users = MutableStateFlow<List<User>>(emptyList())
 
+    private var currentAccountId: String = "" // Initialize with empty string or default value
+
     // Exposed as read-only StateFlow
     val groups: StateFlow<List<Group>> = _groups.asStateFlow()
     val users: StateFlow<List<User>> = _users.asStateFlow()
 
-    init {
-        loadGroups()
-        loadUsers()
+    // Method to update current account ID
+    fun setCurrentAccountId(accountId: String) {
+        Log.d("HI", "Anything happens here")
+        currentAccountId = accountId
+        loadGroupsForAccount(accountId)
     }
 
-    fun loadGroups() {
+
+    private fun loadGroupsForAccount(accountId: String) {
         viewModelScope.launch {
             try {
-                val result = groupRepository.getGroups()
-                _groups.value = result
+                val groups = groupRepository.getGroupsForAccount(accountId)
+                _groups.value = groups
             } catch (e: Exception) {
-                Log.e("GroupViewModel", "Error loading groups: ${e.message}")
-            }
-        }
-    }
-
-    fun loadUsers() {
-        viewModelScope.launch {
-            try {
-                val result = groupRepository.getUsers()
-                _users.value = result
-            } catch (e: Exception) {
-                Log.e("GroupViewModel", "Error loading users: ${e.message}")
-            }
-        }
-    }
-
-    private suspend fun getAllUsers(): List<User> {
-        return withContext(Dispatchers.IO) {
-            try {
-                apiService.getUsers()
-            } catch (e: Exception) {
-                Log.e("MyAppTag", "Error loading users: ${e.message}")
-                emptyList()
+                Log.e("GroupViewModel", "Error loading groups for account: ${e.message}")
             }
         }
     }
@@ -85,7 +66,7 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 groupRepository.addExpense(groupId, userId, expense)
                 // Optionally, refresh group data if needed
-                _groups.value = groupRepository.getGroups()
+                _groups.value = groupRepository.getGroupsForAccount(currentAccountId)
             } catch (e: Exception) {
                 Log.e("GroupViewModel", "Error adding expense: ${e.message}")
             }
@@ -97,7 +78,7 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
             // Trying hardcoded data
             // emit(listOf(DebtItem("Test User", "+10€")))
 
-            val detailedGroup = groupRepository.getDetailedGroup(groupId)
+            val detailedGroup = groupRepository.getGroup(groupId)
 
         // Initialize a map to track balances for each user
         val balances = detailedGroup.participants.associate { it.user.id to 0.0 }.toMutableMap()
@@ -137,24 +118,17 @@ class GroupViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun Double.format(): String = String.format("%.2f", this)
-
     // Method to get participants of a group
     fun getGroupParticipants(groupId: String): List<Participant> {
         return groups.value.find { it.id == groupId }?.participants ?: emptyList()
-    }
-
-    // Method to get user ID by name
-    fun getUserIdByName(name: String): String? {
-        return users.value.find { it.name == name }?.id
     }
 
     fun createGroup(group: Group) {
         viewModelScope.launch {
             try {
                 Log.d("GroupViewModel", "Creating group: $group")
-                groupRepository.createGroup(group)
-                _groups.value = groupRepository.getGroups()
+                groupRepository.createGroup(group, currentAccountId)
+                _groups.value = groupRepository.getGroupsForAccount(currentAccountId)
             } catch (e: Exception) {
                 Log.e("GroupViewModel", "Error creating group: ${e.message}")
             }

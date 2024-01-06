@@ -30,6 +30,7 @@ import com.example.paymentapp.ui.pages.SecondScreen
 import com.example.paymentapp.ui.theme.PaymentAppTheme
 import com.example.paymentapp.viewmodel.GroupViewModel
 import androidx.compose.runtime.collectAsState
+import com.example.paymentapp.data.LoginViewModel
 import com.example.paymentapp.ui.pages.LoginScreen
 import com.example.paymentapp.ui.pages.SignUpScreen
 
@@ -92,6 +93,7 @@ class MainActivity : ComponentActivity() {
                 val currentRoute = getCurrentRoute(navController)
                 var currentGroupId by remember { mutableStateOf<String?>(null) }
                 val viewModel: GroupViewModel = viewModel()
+                val loginViewModel: LoginViewModel = viewModel()
 
                 Scaffold(
                     topBar = {
@@ -103,9 +105,9 @@ class MainActivity : ComponentActivity() {
                         startDestination = "signup",
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        composable("signup") { SignUpScreen(navController) } // Add SignUpScreen route
-                        composable("login") { LoginScreen(navController) } // Add SignUpScreen route
-                        composable("first") { Groups(navController, viewModel) }
+                        composable("signup") { SignUpScreen(navController, loginViewModel) } // Add SignUpScreen route
+                        composable("login") { LoginScreen(navController, loginViewModel) } // Add SignUpScreen route
+                        composable("first") { Groups(navController, viewModel, loginViewModel) }
                         composable("second") { SecondScreen(navController) }
                         composable("groupManagement/{groupId}") { backStackEntry ->
                             currentGroupId = backStackEntry.arguments?.getString("groupId")

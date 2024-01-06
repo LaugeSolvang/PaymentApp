@@ -1,6 +1,6 @@
 package com.example.paymentapp.network
 
-import com.example.paymentapp.network.api.GroupApiService
+import com.example.paymentapp.network.api.ApiService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -71,9 +71,9 @@ object RetrofitBuilder {
             .build()
     }
 
-    fun getGroupApiService(context: Context): GroupApiService {
+    fun getGroupApiService(context: Context): ApiService {
         val retrofit = buildRetrofit(context)
-        return retrofit.create(GroupApiService::class.java)
+        return retrofit.create(ApiService::class.java)
     }
 
 }
