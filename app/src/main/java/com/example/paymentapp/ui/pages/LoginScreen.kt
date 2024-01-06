@@ -15,6 +15,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.paymentapp.R
 import com.example.paymentapp.components.ButtonComponent
@@ -25,9 +26,11 @@ import com.example.paymentapp.components.MyTextFieldComponent
 import com.example.paymentapp.components.NormalTextComponent
 import com.example.paymentapp.components.PasswordTextFieldComponent
 import com.example.paymentapp.components.UnderLinedNormalTextComponent
+import com.example.paymentapp.data.LoginViewModel
+import com.example.paymentapp.data.UIEvent
 
 @Composable
-fun LoginScreen (navController: NavHostController) {
+fun LoginScreen (navController: NavHostController, loginViewModel: LoginViewModel = viewModel()) {
 
     Surface(
         color = Color.White,
@@ -45,11 +48,23 @@ fun LoginScreen (navController: NavHostController) {
             HeadingTextComponent(value = stringResource(id = R.string.welcome))
             Spacer(modifier = Modifier.height(20.dp))
 
-            MyTextFieldComponent(labelValue = stringResource(id = R.string.email),
-                painterResource = painterResource(id = R.drawable.message))
+            MyTextFieldComponent(
+                labelValue = stringResource(id = R.string.email),
+                painterResource = painterResource(id = R.drawable.message),
+                onTextSelected = {
+                    loginViewModel.onEvent(UIEvent.EmailChanged(it))
 
-            PasswordTextFieldComponent(labelValue = stringResource(id = R.string.password),
-                painterResource = painterResource(id = R.drawable.lock))
+                }
+            )
+
+            PasswordTextFieldComponent(
+                labelValue = stringResource(id = R.string.password),
+                painterResource = painterResource(id = R.drawable.lock),
+                onTextSelected = {
+                    loginViewModel.onEvent(UIEvent.PasswordChanged(it))
+
+                }
+            )
 
             Spacer(modifier = Modifier.height(40.dp))
             UnderLinedNormalTextComponent(value = stringResource(id = R.string.forgot_password))
