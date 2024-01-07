@@ -27,5 +27,22 @@ class UserRepository(private val localData: LocalData, private val apiService: A
             null
         }
     }
-    // Other user-related methods...
+
+    suspend fun getUserDetails(userId: String): Account? {
+        return try {
+            apiService.getUser(userId)
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error fetching user details: ${e.message}")
+            null
+        }
+    }
+
+    suspend fun updateUserDetails(userId: String, updatedUser: Account) {
+        try {
+            apiService.updateUser(userId, updatedUser)
+            localData.saveUser(updatedUser) // Optionally update local storage
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Error updating user details: ${e.message}")
+        }
+    }
 }
