@@ -72,11 +72,14 @@ fun LoginScreen (navController: NavHostController, loginViewModel: LoginViewMode
 
             Spacer(modifier = Modifier.height(40.dp)
             )
-            ButtonComponent(value = stringResource(id = R.string.login),
+            ButtonComponent(
+                value = stringResource(id = R.string.login),
                 onButtonClick = {
                     loginViewModel.onEvent(UIEvent.LoginButtonClicked)
                     navController.navigate("first") // Navigate to the Groups screen
-                })
+                },
+                isEnabled = loginViewModel.registrationUIState.value.hasErrors()
+                )
 
             Spacer(modifier = Modifier.height(20.dp))
             DividerTextComponent()

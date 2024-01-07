@@ -78,11 +78,14 @@ fun SignUpScreen(navController: NavHostController, loginViewModel: LoginViewMode
             )
             Spacer(modifier = Modifier.height(80.dp)
             )
-            ButtonComponent(value = stringResource(id = R.string.register),
-            onButtonClick = {
-                loginViewModel.onEvent(UIEvent.RegisterButtonClicked)
-                navController.navigate("first", ) // Navigate to the Groups screen
-            })
+            ButtonComponent(
+                value = stringResource(id = R.string.register),
+                onButtonClick = {
+                    loginViewModel.onEvent(UIEvent.RegisterButtonClicked)
+                    navController.navigate("first", ) // Navigate to the Groups screen
+                },
+                isEnabled = loginViewModel.registrationUIState.value.hasErrors()
+                )
             Spacer(modifier = Modifier.height(20.dp)
             )
             DividerTextComponent()

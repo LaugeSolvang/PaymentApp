@@ -10,4 +10,9 @@ data class RegistrationUIState (
     var lastNameError: Boolean = false,
     var emailError: Boolean = false,
     var passwordError: Boolean = false
-)
+){
+    fun hasErrors(): Boolean {
+        return firstNameError || lastNameError || emailError || passwordError
+    }
+}
+
