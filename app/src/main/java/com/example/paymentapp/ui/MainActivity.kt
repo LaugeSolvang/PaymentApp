@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,6 +33,7 @@ import com.example.paymentapp.viewmodel.GroupViewModel
 import androidx.compose.runtime.collectAsState
 import com.example.paymentapp.data.LoginViewModel
 import com.example.paymentapp.ui.pages.LoginScreen
+import com.example.paymentapp.ui.pages.ProfilePage
 import com.example.paymentapp.ui.pages.SignUpScreen
 
 import com.google.firebase.FirebaseApp
@@ -121,6 +123,9 @@ class MainActivity : ComponentActivity() {
                         composable("createGroup") {
                             CreateGroup(navController, viewModel)
                         }
+                        composable("profile") {
+                            ProfilePage(viewModel = loginViewModel)
+                        }
                     }
                 }
             }
@@ -167,7 +172,17 @@ fun AppBar(navController: NavHostController, currentRoute: String?, title: Strin
                     Icon(Icons.Filled.ArrowBack, contentDescription = "Go back")
                 }
             }
+        },
+        actions = {
+            // Profile button
+            IconButton(onClick = { navController.navigate("profile") }) {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle, // Use an appropriate icon
+                    contentDescription = "Profile"
+                )
+            }
         }
+
     )
 }
 

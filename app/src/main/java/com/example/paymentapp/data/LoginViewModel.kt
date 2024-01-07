@@ -24,6 +24,8 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
     var registrationUIState = mutableStateOf(RegistrationUIState())
 
+    var account = mutableStateOf<Account?>(null)
+
     fun onEvent(event:UIEvent){
         validateDataWithRules()
 
@@ -87,6 +89,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 userRepository.createUser(newUser)
                 // Handle post-registration logic
                 accountId.value = newUser.id
+                getUserDetails() // Fetch the user details after successful sign up
                 Log.d("LoginViewModel", "Account created with ID: ${accountId.value}")
 
             } catch (e: Exception) {
@@ -107,6 +110,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 )
                 if (user != null) {
                     accountId.value = user.id
+                    getUserDetails() // Fetch user details after successful login
                     Log.d(TAG, "Login successful with account ID: ${accountId.value}")
                 } else {
                     Log.e(TAG, "Login failed: User not found")
@@ -116,6 +120,44 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+    fun getUserDetails() {
+        viewModelScope.launch {
+            accountId.value?.let { userId ->
+                userRepository.getUserDetails(userId)?.let { user ->
+                    account.value = user
+                    Log.d(TAG, "Fetched user details: $user")
+                }
+            }
+        }
+    }
+
+    fun updateUserDetails(firstName: String, lastName: String, email: String) {
+        account.value?.let { existingUser ->
+            val updatedUser = Account(
+                id = existingUser.id,
+                firstname = firstName,
+                lastname = lastName,
+                email = email,
+                password = existingUser.password, // Assuming password is part of the existing account
+                groupIds = existingUser.groupIds // Preserve the existing groupIds
+            )
+            Log.d(TAG, "Updating user details with: $updatedUser")
+
+            viewModelScope.launch {
+                userRepository.updateUserDetails(updatedUser.id, updatedUser)
+            }
+        }
+    }
+
+    fun updateUserDetails() {
+        account.value?.let { updatedUser ->
+            Log.d(TAG, "Updating user details with: $updatedUser")
+            viewModelScope.launch {
+                userRepository.updateUserDetails(updatedUser.id, updatedUser)
+            }
+        }
+    }
+
 
     private fun validateDataWithRules() {
         val fNameResult = Validator.validateFirstName(
