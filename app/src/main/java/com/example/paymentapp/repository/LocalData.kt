@@ -1,13 +1,14 @@
 package com.example.paymentapp.repository
 
 import android.content.Context
+import com.example.paymentapp.model.Account
 import com.example.paymentapp.model.Expense
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.example.paymentapp.model.Group
 import com.example.paymentapp.model.User
 
-class LocalData(private val context: Context) {
+class LocalData(context: Context) {
 
     private val sharedPreferences = context.getSharedPreferences("LocalCache", Context.MODE_PRIVATE)
     private val gson = Gson()
@@ -27,19 +28,15 @@ class LocalData(private val context: Context) {
         }
     }
 
-    fun saveUsers(users: List<User>) {
-        val json = gson.toJson(users)
-        sharedPreferences.edit().putString("users", json).apply()
+    fun getGroupById(groupId: String): Group {
+        val groups = getGroups()
+        return groups.find { it.id == groupId }
+            ?: throw NoSuchElementException("Group not found with ID: $groupId")
     }
 
-    fun getUsers(): List<User> {
-        val json = sharedPreferences.getString("users", null)
-        return if (json != null) {
-            val type = object : TypeToken<List<User>>() {}.type
-            gson.fromJson(json, type)
-        } else {
-            emptyList()
-        }
+    fun saveUser(user: Account) {
+        val json = gson.toJson(user)
+        sharedPreferences.edit().putString("user", json).apply()
     }
 
     fun saveExpenses(expenses: List<Expense>) {
