@@ -2,6 +2,7 @@
     <string name="app_name">PaymentApp</string>
     <string name="msg_token_fmt">Token: </string>
     <string name="hello">Hey there,</string>
+    <string name="msg_context_text">A New Expense Has Been Added</string>
     <string name="create_account">Create an account</string>
     <string name="welcome">Welcome Back</string>
     <string name="first_name">First Name</string>
